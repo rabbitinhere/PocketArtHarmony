@@ -1,0 +1,9 @@
+[
+  {"thingName": "7.30起床", "isFinish": false},
+  {"thingName": "8.30早餐", "isFinish": false},
+  {"thingName": "11.30中餐", "isFinish": false},
+  {"thingName": "17.30晚餐", "isFinish": false},
+  {"thingName": "21.30夜宵", "isFinish": false},
+  {"thingName": "22.30洗澡", "isFinish": false},
+  {"thingName": "1.30睡觉", "isFinish": false}
+]
