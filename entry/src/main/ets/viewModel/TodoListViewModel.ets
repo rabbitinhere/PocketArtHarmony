@@ -33,6 +33,7 @@ export default class TodoListViewModel {
         console.error("未获取到返回数据");
         return;
       }
+
       const artLIstRespBean: ArtworkListResp = JSON.parse(artListResp.result as string) as ArtworkListResp;
       if (!artLIstRespBean || !artLIstRespBean.objectIDs || artLIstRespBean.objectIDs.length === 0) {
         console.error("objectIDs 为空");
