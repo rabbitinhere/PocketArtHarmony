@@ -5,7 +5,7 @@ export class ThingViewModel {
   @Track artwork: Artwork = new Artwork();
   @Track isFinish: boolean = false;
 
-  async fetchArtworkData(id: number) {
+  async fetchArtworkData(id: number):Promise<ThingViewModel> {
     try {
       // ✅ 正确创建 http 实例
       const httpRequest = http.createHttp();
@@ -27,6 +27,7 @@ export class ThingViewModel {
     } catch (e) {
       console.error(`Failed to fetch artwork ${id}: ${e}`);
     }
+    return this;
   }
 }
 
@@ -34,6 +35,8 @@ export class ThingViewModel {
 export class Artwork {
   objectID: number = 0;
   title: string = '';
+  primaryImage: string = '';
+  primaryImageSmall: string = '';
 }
 
 

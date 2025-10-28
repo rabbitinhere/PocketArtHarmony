@@ -18,7 +18,7 @@ export struct TabMainComponent {
           // 艺术品列表
           List() {
             ListItem() {
-              Text('掌上艺术馆')
+              Text('Pocket Art')
                 .fontSize(30)
                 .fontWeight(FontWeight.Bold)
                 .textAlign(TextAlign.Center)
@@ -28,7 +28,7 @@ export struct TabMainComponent {
             ForEach(this.todoListViewModel.things, (item: ThingViewModel, index: number) => {
               ListItem() {
                 Row() {
-                  Image($r('app.media.startIcon'))
+                  Image(item.artwork.primaryImageSmall || $r('app.media.startIcon'))
                     .width(80)
                     .height(80)
                     .margin({ left: 20, right: 20 })
