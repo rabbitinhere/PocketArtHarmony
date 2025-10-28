@@ -12,57 +12,77 @@ export default class TodoListViewModel {
   @Track isChoosen: boolean = true;
   @Track things: ThingViewModelArray = new ThingViewModelArray();
   @Track isLoading: boolean = false; // ✅ 新增：是否显示 Loading
+  @Track hasMoreData: boolean = true; // 新增：是否还有更多数据可加载
 
+  // 新增实例变量
+  private allObjectIDs: number[] = [];
+  private currentPage: number = 0;
 
   async loadArtworks() {
-    // ✅ 开始加载
     this.isLoading = true;
-
     try {
+      // 清空原有数据
       this.things = new ThingViewModelArray();
-
 
       const httpRequest = http.createHttp();
       const artListResp = await httpRequest.request(
         `https://collectionapi.metmuseum.org/public/collection/v1/search?q=&isHighlight=true`,
-        {
-          method: http.RequestMethod.GET,
-        }
+        { method: http.RequestMethod.GET }
       );
-      if (!artListResp.result) {
-        console.error("未获取到返回数据");
-        return;
-      }
 
-      const artLIstRespBean: ArtworkListResp = JSON.parse(artListResp.result as string) as ArtworkListResp;
-      if (!artLIstRespBean || !artLIstRespBean.objectIDs || artLIstRespBean.objectIDs.length === 0) {
-        console.error("objectIDs 为空");
-        return;
-      }
-      const tasks: Promise<ThingViewModel>[] = [];
+      // 存储所有对象ID用于分页
+      const artLIstRespBean = JSON.parse(artListResp.result as string) as ArtworkListResp;
+      this.allObjectIDs = artLIstRespBean.objectIDs;
+      this.currentPage = 0; // 重置分页索引
+      this.hasMoreData = true;
 
-      for (let i = 0; i <= 4; i++) {
-        const vm = new ThingViewModel();
-        const task = vm.fetchArtworkData(artLIstRespBean.objectIDs[i]).then(() => vm);
-        tasks.push(task);
-      }
-
-      const results = await Promise.all(tasks);
-      this.things = results as ThingViewModelArray;
+      // 加载第一页
+      await this.loadNextPage();
     } catch (e) {
-      console.error('加载艺术品失败:', e);
+      console.error('初始化加载失败:', e);
     } finally {
-      // ✅ 加载结束
       this.isLoading = false;
     }
   }
 
-  chooseAll(): void {
-    for (let thing of this.things) {
-      thing.isFinish = this.isChoosen;
+  async loadNextPage() {
+    if (!this.hasMoreData || this.isLoading) return;
+
+    this.isLoading = true;
+    try {
+      const start = this.currentPage * 5;
+      const end = start + 5;
+
+      if (start >= this.allObjectIDs.length) {
+        this.hasMoreData = false;
+        return;
+      }
+
+      const tasks: Promise<ThingViewModel>[] = [];
+      for (let i = start; i < Math.min(end, this.allObjectIDs.length); i++) {
+        const vm = new ThingViewModel();
+        tasks.push(vm.fetchArtworkData(this.allObjectIDs[i]).then(() => vm));
+      }
+
+      const results = await Promise.all(tasks);
+
+      // ✅ 不再替换整个数组，保持引用，原地 push
+      results.forEach(item => {
+        this.things.push(item);
+      });
+
+      this.currentPage++;
+
+      if (this.currentPage * 5 >= this.allObjectIDs.length) {
+        this.hasMoreData = false;
+      }
+    } catch (e) {
+      console.error('加载更多失败:', e);
+    } finally {
+      this.isLoading = false;
     }
-    this.isChoosen = !this.isChoosen;
   }
+
 }
 
 

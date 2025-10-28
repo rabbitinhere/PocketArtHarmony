@@ -45,7 +45,30 @@ export struct TabMainComponent {
               }
               .margin({ top: 8, bottom: 8 })
             })
-          }
+
+            // 加载更多提示项
+            ListItem() {
+              Row()
+              {
+                if (this.todoListViewModel.isLoading) {
+                  LoadingProgress()
+                    .width(30)
+                    .height(30)
+                  Text('加载中...')
+                    .margin({ left: 8 })
+                } else {
+                  Text('上拉加载更多')
+                    .fontColor('#666')
+                }
+              }
+              .width('100%')
+              .height(60)
+              .justifyContent(FlexAlign.Center)
+              .visibility(this.todoListViewModel.hasMoreData ? Visibility.Visible : Visibility.None)
+            }
+          }.onReachEnd(() => {
+            this.todoListViewModel.loadNextPage();
+          })
         }
       }
 
