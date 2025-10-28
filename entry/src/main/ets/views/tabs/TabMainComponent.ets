@@ -11,9 +11,7 @@ export struct TabMainComponent {
   build() {
     Stack() { // ✅ 使用 Stack 让 Loading 层叠在列表上
       Column() {
-
-
-        if (!this.todoListViewModel.isLoading) {
+        if (!this.todoListViewModel.isInitLoading) {
 
           // 艺术品列表
           List() {
@@ -50,7 +48,7 @@ export struct TabMainComponent {
             ListItem() {
               Row()
               {
-                if (this.todoListViewModel.isLoading) {
+                if (this.todoListViewModel.isLoadingMore) {
                   LoadingProgress()
                     .width(30)
                     .height(30)
@@ -67,13 +65,13 @@ export struct TabMainComponent {
               .visibility(this.todoListViewModel.hasMoreData ? Visibility.Visible : Visibility.None)
             }
           }.onReachEnd(() => {
-            this.todoListViewModel.loadNextPage();
+            this.todoListViewModel.loadNextPage(false);
           })
         }
       }
 
       // ✅ Loading 弹框层（条件渲染）
-      if (this.todoListViewModel.isLoading) {
+      if (this.todoListViewModel.isInitLoading) {
         // 半透明背景 + 居中圆形加载指示器
         Stack() {
           Rect()

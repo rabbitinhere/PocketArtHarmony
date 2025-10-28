@@ -11,7 +11,8 @@ export class ThingViewModelArray extends Array<ThingViewModel> {
 export default class TodoListViewModel {
   @Track isChoosen: boolean = true;
   @Track things: ThingViewModelArray = new ThingViewModelArray();
-  @Track isLoading: boolean = false; // ✅ 新增：是否显示 Loading
+  @Track isInitLoading: boolean = false; // ✅ 新增：是否显示 Loading
+  @Track isLoadingMore: boolean = false; // ✅ 新增：是否显示 Loading
   @Track hasMoreData: boolean = true; // 新增：是否还有更多数据可加载
 
   // 新增实例变量
@@ -19,7 +20,7 @@ export default class TodoListViewModel {
   private currentPage: number = 0;
 
   async loadArtworks() {
-    this.isLoading = true;
+    this.isInitLoading = true;
     try {
       // 清空原有数据
       this.things = new ThingViewModelArray();
@@ -37,18 +38,20 @@ export default class TodoListViewModel {
       this.hasMoreData = true;
 
       // 加载第一页
-      await this.loadNextPage();
+      await this.loadNextPage(true);
     } catch (e) {
       console.error('初始化加载失败:', e);
     } finally {
-      this.isLoading = false;
+      this.isInitLoading = false;
     }
   }
 
-  async loadNextPage() {
-    if (!this.hasMoreData || this.isLoading) return;
+  async loadNextPage(firstPage: boolean) {
+    if (!this.hasMoreData) return;
 
-    this.isLoading = true;
+    if(firstPage == false){
+      this.isLoadingMore = true;
+    }
     try {
       const start = this.currentPage * 5;
       const end = start + 5;
@@ -79,7 +82,9 @@ export default class TodoListViewModel {
     } catch (e) {
       console.error('加载更多失败:', e);
     } finally {
-      this.isLoading = false;
+      if(firstPage == false){
+        this.isLoadingMore = false;
+      }
     }
   }
 
