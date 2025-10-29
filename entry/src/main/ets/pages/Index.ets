@@ -12,6 +12,12 @@ struct TodoList {
   @State currentPage: number = 0; // 当前页面索引
   private context = this.getUIContext().getHostContext() as common.UIAbilityContext;
 
+
+  private tabConfigs: TabConfig[] = [
+    { index: 0, name: '页面1' },
+    { index: 1, name: '页面2' },
+    { index: 2, name: '页面3' }
+  ];
   async aboutToAppear() {
     // await this.todoListViewModel.loadTasks(this.context);
   }
@@ -43,26 +49,55 @@ struct TodoList {
       }
       .height('90%')
 
-      // 底部导航栏
-      Row() {
-        Button('页面1')
-          .onClick(() => this.currentPage = 0)
-          .backgroundColor(this.currentPage === 0 ? '#409EFF' : '#444444')
-
-        Button('页面2')
-          .onClick(() => this.currentPage = 1)
-          .backgroundColor(this.currentPage === 1 ? '#409EFF' : '#444444')
-
-        Button('页面3')
-          .onClick(() => this.currentPage = 2)
-          .backgroundColor(this.currentPage === 2 ? '#409EFF' : '#444444')
-      }
-      .width('100%')
-      .height('10%')
-      .justifyContent(FlexAlign.SpaceAround)
+      // 使用封装的底部导航栏
+      this.TabBar()
     }
     .height('100%')
     .width('100%')
     .backgroundColor('#90f1f3f5')
   }
+
+  // 底部导航栏组件
+  @Builder TabBar() {
+    Row() {
+      ForEach(this.tabConfigs, (tab: TabConfig) => {
+        this.TabItem(tab)
+      })
+    }
+    .width('100%')
+    .height('10%')
+    .justifyContent(FlexAlign.SpaceBetween)
+    .border({ width: { top: 1 }, color: '#E5E5E5' })
+  }
+
+  // 封装的标签页组件
+  @Builder TabItem(tab: TabConfig) {
+
+    Column() {
+      Text(tab.name)
+        .fontSize(16)
+        .fontColor(this.currentPage === tab.index ? '#409EFF' : '#666666')
+        .fontWeight(this.currentPage === tab.index ? FontWeight.Bold : FontWeight.Normal)
+    }
+    .layoutWeight(1)
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+    .backgroundColor('#FFFFFF')
+    .border({
+      width: {
+        left: tab.index === 0 ? 0 : 1,  // 第一个元素左边框为0
+        right: 1
+      },
+      color: '#E5E5E5'
+    })
+    .onClick(() => {
+      this.currentPage = tab.index;
+    })
+  }
+}
+
+// 底部导航栏配置数据
+interface TabConfig {
+  index: number;
+  name: string;
 }
