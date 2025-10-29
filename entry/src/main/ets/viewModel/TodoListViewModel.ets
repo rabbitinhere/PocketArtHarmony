@@ -74,6 +74,9 @@ export default class TodoListViewModel {
         this.things.push(item);
       });
 
+      // ✅ 手动触发响应式刷新（ArkUI要求替换引用才会渲染）
+      this.things = this.things;
+
       this.currentPage++;
 
       if (this.currentPage * 5 >= this.allObjectIDs.length) {
