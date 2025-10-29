@@ -68,14 +68,14 @@ export default class TodoListViewModel {
       }
 
       const results = await Promise.all(tasks);
-
-      // ✅ 不再替换整个数组，保持引用，原地 push
-      results.forEach(item => {
-        this.things.push(item);
-      });
-
-      // ✅ 手动触发响应式刷新（ArkUI要求替换引用才会渲染）
-      this.things = this.things;
+      this.things = [...this.things, ...results];
+      // // ✅ 不再替换整个数组，保持引用，原地 push
+      // results.forEach(item => {
+      //   this.things.push(item);
+      // });
+      //
+      // // ✅ 手动触发响应式刷新（ArkUI要求替换引用才会渲染）
+      // this.things = this.things;
 
       this.currentPage++;
 
