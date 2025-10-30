@@ -35,6 +35,8 @@ export struct TabMainComponent {
                   Text(item.artwork.title)
                     .fontSize(18)
                     .fontWeight(500)
+                    .padding({ right: 10 }) // 添加右侧间距
+                    .layoutWeight(1) // 让文本占据剩余空间
                 }
                 .width('100%')
                 .height(160)

@@ -1,5 +1,5 @@
 import { ThingViewModel } from "./ThingViewModel";
-import { http } from '@kit.NetworkKit'; // ✅ 注意这里要解构导入
+import { http } from '@kit.NetworkKit'; //  注意这里要解构导入
 import { HttpHelper } from "../http/NetworkService";
 
 @Observed
@@ -10,8 +10,8 @@ export class ThingViewModelArray extends Array<ThingViewModel> {
 export default class TabMainViewModel {
   @Track isChoosen: boolean = true;
   @Track things: ThingViewModelArray = new ThingViewModelArray();
-  @Track isInitLoading: boolean = false; // ✅ 新增：是否显示 Loading
-  @Track isLoadingMore: boolean = false; // ✅ 新增：是否显示 Loading
+  @Track isInitLoading: boolean = false; // 是否显示 Loading
+  @Track isLoadingMore: boolean = false; // 是否显示 Loading
   @Track hasMoreData: boolean = true; // 新增：是否还有更多数据可加载
   // 新增实例变量
   private allObjectIDs: number[] = [];
