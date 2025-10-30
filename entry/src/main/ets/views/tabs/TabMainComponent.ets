@@ -1,6 +1,6 @@
-import TabMainViewModel from "../../viewModel/TodoListViewModel";
+import TabMainViewModel from "../../viewModel/TabMainViewModel";
 
-import { ThingViewModel } from "../../viewModel/ThingViewModel";
+import { OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
 
 @Component
 export struct TabMainComponent {
@@ -24,7 +24,7 @@ export struct TabMainComponent {
                 .width('100%')
                 .margin({ top: 20, bottom: 20 })
             }
-            ForEach(this.todoListViewModel.things, (item: ThingViewModel, index: number) => {
+            ForEach(this.todoListViewModel.things, (item: OneArtworkViewModel, index: number) => {
               ListItem() {
                 Row() {
                   Image(item.artwork.primaryImageSmall || $r('app.media.startIcon'))

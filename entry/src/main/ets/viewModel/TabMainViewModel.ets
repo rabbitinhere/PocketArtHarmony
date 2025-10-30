@@ -1,9 +1,9 @@
-import { ThingViewModel } from "./ThingViewModel";
+import { OneArtworkViewModel } from "./OneArtworkViewModel";
 import { http } from '@kit.NetworkKit'; //  注意这里要解构导入
 import { HttpHelper } from "../http/NetworkService";
 
 @Observed
-export class ThingViewModelArray extends Array<ThingViewModel> {
+export class ThingViewModelArray extends Array<OneArtworkViewModel> {
 }
 
 @Observed
@@ -57,9 +57,9 @@ export default class TabMainViewModel {
         return;
       }
 
-      const tasks: Promise<ThingViewModel>[] = [];
+      const tasks: Promise<OneArtworkViewModel>[] = [];
       for (let i = start; i < Math.min(end, this.allObjectIDs.length); i++) {
-        const vm = new ThingViewModel();
+        const vm = new OneArtworkViewModel();
         tasks.push(vm.fetchArtworkData(this.allObjectIDs[i]).then(() => vm));
       }
 

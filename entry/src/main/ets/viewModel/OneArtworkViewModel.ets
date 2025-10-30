@@ -2,11 +2,11 @@ import { http } from '@kit.NetworkKit'; // ✅ 注意这里要解构导入
 import { HttpHelper } from '../http/NetworkService';
 
 @Observed
-export class ThingViewModel {
+export class OneArtworkViewModel {
   @Track artwork: Artwork = new Artwork();
   @Track isFinish: boolean = false;
 
-  async fetchArtworkData(id: number):Promise<ThingViewModel> {
+  async fetchArtworkData(id: number):Promise<OneArtworkViewModel> {
     try {
       const response = await HttpHelper.getInstance().request(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`,
         {

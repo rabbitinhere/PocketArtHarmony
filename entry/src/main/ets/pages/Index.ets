@@ -1,14 +1,16 @@
 import { common } from '@kit.AbilityKit';
+import SwipeViewModel from '../viewModel/SwipeViewModel';
 // import ViewModel
-import TabMainViewModel from '../viewModel/TodoListViewModel';
-
+import TabMainViewModel from '../viewModel/TabMainViewModel';
 import { TabMainComponent } from '../views/tabs/TabMainComponent';
+import { TabSwipeComponent } from '../views/tabs/TabSwipeComponent';
 
 // ra_todo 在这里看官方怎么写mvvm的，先copy过来跑起来，再看，看文章的最下面。https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/arkts-mvvm#mvvm%E6%A8%A1%E5%BC%8F%E4%BB%8B%E7%BB%8D
 @Entry
 @Component
-struct TodoList {
+struct MainPage {
   @State todoListViewModel: TabMainViewModel = new TabMainViewModel();
+  @State swipeViewModel: SwipeViewModel = new SwipeViewModel();
   @State currentPage: number = 0; // 当前页面索引
   private context = this.getUIContext().getHostContext() as common.UIAbilityContext;
 
@@ -26,14 +28,11 @@ struct TodoList {
     Column() {
       // 内容区域
       Stack() {
-        // 页面1：原有待办列表
+        // 页面1
         TabMainComponent({ todoListViewModel: this.todoListViewModel }).visibility(this.currentPage === 0 ? Visibility.Visible : Visibility.None)
 
         // 页面2
-          Text('页面2')
-            .fontSize(30)
-            .fontWeight(FontWeight.Bold)
-            .align(Alignment.Center).visibility(this.currentPage === 1 ? Visibility.Visible : Visibility.None)
+        TabSwipeComponent({ swipeViewModel: this.swipeViewModel }).visibility(this.currentPage === 1 ? Visibility.Visible : Visibility.None)
 
         // 页面3
           Text('页面3')
