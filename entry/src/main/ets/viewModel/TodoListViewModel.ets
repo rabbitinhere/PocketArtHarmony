@@ -1,7 +1,5 @@
 import { ThingViewModel } from "./ThingViewModel";
 import { http } from '@kit.NetworkKit'; // ✅ 注意这里要解构导入
-import { common } from "@kit.AbilityKit";
-import TodoListModel from "../model/TodoListModel";
 import { HttpHelper } from "../http/NetworkService";
 
 @Observed
@@ -9,7 +7,7 @@ export class ThingViewModelArray extends Array<ThingViewModel> {
 }
 
 @Observed
-export default class TodoListViewModel {
+export default class TabMainViewModel {
   @Track isChoosen: boolean = true;
   @Track things: ThingViewModelArray = new ThingViewModelArray();
   @Track isInitLoading: boolean = false; // ✅ 新增：是否显示 Loading

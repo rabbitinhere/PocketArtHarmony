@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit';
 // import ViewModel
-import TodoListViewModel from '../viewModel/TodoListViewModel';
+import TabMainViewModel from '../viewModel/TodoListViewModel';
 
 import { TabMainComponent } from '../views/tabs/TabMainComponent';
 
@@ -8,7 +8,7 @@ import { TabMainComponent } from '../views/tabs/TabMainComponent';
 @Entry
 @Component
 struct TodoList {
-  @State todoListViewModel: TodoListViewModel = new TodoListViewModel();
+  @State todoListViewModel: TabMainViewModel = new TabMainViewModel();
   @State currentPage: number = 0; // 当前页面索引
   private context = this.getUIContext().getHostContext() as common.UIAbilityContext;
 

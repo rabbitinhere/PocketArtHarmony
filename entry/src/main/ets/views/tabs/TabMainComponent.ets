@@ -1,10 +1,10 @@
-import TodoListViewModel from "../../viewModel/TodoListViewModel";
+import TabMainViewModel from "../../viewModel/TodoListViewModel";
 
 import { ThingViewModel } from "../../viewModel/ThingViewModel";
 
 @Component
 export struct TabMainComponent {
-  @Link todoListViewModel: TodoListViewModel;
+  @Link todoListViewModel: TabMainViewModel;
 
   aboutToAppear() {
     this.todoListViewModel.loadArtworks();
