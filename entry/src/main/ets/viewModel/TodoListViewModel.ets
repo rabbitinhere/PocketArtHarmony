@@ -2,6 +2,7 @@ import { ThingViewModel } from "./ThingViewModel";
 import { http } from '@kit.NetworkKit'; // ✅ 注意这里要解构导入
 import { common } from "@kit.AbilityKit";
 import TodoListModel from "../model/TodoListModel";
+import { HttpHelper } from "../http/NetworkService";
 
 @Observed
 export class ThingViewModelArray extends Array<ThingViewModel> {
@@ -25,11 +26,9 @@ export default class TodoListViewModel {
       // 清空原有数据
       this.things = new ThingViewModelArray();
 
-      const httpRequest = http.createHttp();
-      const artListResp = await httpRequest.request(
-        `https://collectionapi.metmuseum.org/public/collection/v1/search?q=&isHighlight=true`,
-        { method: http.RequestMethod.GET }
-      );
+      const artListResp = await HttpHelper.getInstance().request(`https://collectionapi.metmuseum.org/public/collection/v1/search?q=&isHighlight=true`,
+        { method: http.RequestMethod.GET })
+
 
       // 存储所有对象ID用于分页
       const artLIstRespBean = JSON.parse(artListResp.result as string) as ArtworkListResp;
@@ -69,13 +68,6 @@ export default class TodoListViewModel {
 
       const results = await Promise.all(tasks);
       this.things = [...this.things, ...results];
-      // // ✅ 不再替换整个数组，保持引用，原地 push
-      // results.forEach(item => {
-      //   this.things.push(item);
-      // });
-      //
-      // // ✅ 手动触发响应式刷新（ArkUI要求替换引用才会渲染）
-      // this.things = this.things;
 
       this.currentPage++;
 
