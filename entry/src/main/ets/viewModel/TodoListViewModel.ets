@@ -15,12 +15,15 @@ export default class TodoListViewModel {
   @Track isInitLoading: boolean = false; // ✅ 新增：是否显示 Loading
   @Track isLoadingMore: boolean = false; // ✅ 新增：是否显示 Loading
   @Track hasMoreData: boolean = true; // 新增：是否还有更多数据可加载
-
+  @Track hasLoaded: boolean = false;
   // 新增实例变量
   private allObjectIDs: number[] = [];
   private currentPage: number = 0;
 
   async loadArtworks() {
+    if (this.hasLoaded && this.things.length > 0) {
+      return;
+    }
     this.isInitLoading = true;
     try {
       // 清空原有数据
@@ -38,6 +41,7 @@ export default class TodoListViewModel {
 
       // 加载第一页
       await this.loadNextPage(true);
+      this.hasLoaded = true;
     } catch (e) {
       console.error('初始化加载失败:', e);
     } finally {
