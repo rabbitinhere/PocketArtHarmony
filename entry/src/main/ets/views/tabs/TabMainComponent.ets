@@ -5,6 +5,7 @@ import { ThingViewModel } from "../../viewModel/ThingViewModel";
 @Component
 export struct TabMainComponent {
   @Link todoListViewModel: TodoListViewModel;
+
   aboutToAppear() {
     this.todoListViewModel.loadArtworks();
   }

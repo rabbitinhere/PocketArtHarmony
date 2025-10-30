@@ -27,25 +27,19 @@ struct TodoList {
       // 内容区域
       Stack() {
         // 页面1：原有待办列表
-        if (this.currentPage === 0) {
-          TabMainComponent({ todoListViewModel: this.todoListViewModel })
-        }
+        TabMainComponent({ todoListViewModel: this.todoListViewModel }).visibility(this.currentPage === 0 ? Visibility.Visible : Visibility.None)
 
         // 页面2
-        if (this.currentPage === 1) {
           Text('页面2')
             .fontSize(30)
             .fontWeight(FontWeight.Bold)
-            .align(Alignment.Center)
-        }
+            .align(Alignment.Center).visibility(this.currentPage === 1 ? Visibility.Visible : Visibility.None)
 
         // 页面3
-        if (this.currentPage === 2) {
           Text('页面3')
             .fontSize(30)
             .fontWeight(FontWeight.Bold)
-            .align(Alignment.Center)
-        }
+            .align(Alignment.Center).visibility(this.currentPage === 2 ? Visibility.Visible : Visibility.None)
       }
       .height('90%')
 
