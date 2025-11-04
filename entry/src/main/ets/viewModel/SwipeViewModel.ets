@@ -29,8 +29,8 @@ export default class SwipeViewModel {
         throw new Error('未找到艺术品数据');
       }
 
-      const shuffled = [...data.objectIDs]
-        //.sort(() => 0.5 - Math.random());
+      const shuffled = [...data.objectIDs].sort(() => 0.5 - Math.random());
+        //;
       return shuffled;
     } catch (error) {
       console.error('获取艺术品ID列表失败:', error);
@@ -87,7 +87,7 @@ export default class SwipeViewModel {
       const artworkVM = new OneArtworkViewModel();
       await artworkVM.fetchArtworkData(artworkID);
 
-      if (!artworkVM.artwork.primaryImage) {
+      if (!artworkVM.artwork.primaryImageSmall) {
         return false;
       }
 
@@ -156,7 +156,7 @@ export default class SwipeViewModel {
         continue;
       }
 
-      const success = this.artworks[i].artwork.primaryImage !== "";
+      const success = this.artworks[i].artwork.primaryImageSmall !== "";
       if (success) {
         console.info("ra_todo  有图，break ", this.artworkIDs[i])
         this.currentIndex = i;
