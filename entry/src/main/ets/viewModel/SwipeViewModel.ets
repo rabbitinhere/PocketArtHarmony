@@ -87,6 +87,7 @@ export default class SwipeViewModel {
     }
   }
 
+
   // 滑动到下一张（上滑）
   async swipeToNext(): Promise<void> {
     if (this.isLoading) return;
