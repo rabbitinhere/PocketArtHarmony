@@ -10,14 +10,14 @@ export default class SwipeViewModel {
   @Track isLoading: boolean = false;
   @Track errorMessage: string = '';
   @Track currentArtwork: OneArtworkViewModel | null = null; // 改为普通属性
-
+  artworkIDs: number[] = [];
   // 更新当前艺术品的方法
   private updateCurrentArtwork() {
     this.currentArtwork = this.artworks[this.currentIndex] || null;
   }
 
   // 获取随机艺术品ID列表
-  private async fetchRandomArtworkIDs(count: number = 10): Promise<number[]> {
+  private async fetchRandomArtworkIDs(): Promise<number[]> {
     try {
       const response = await HttpHelper.getInstance().request(
         `https://collectionapi.metmuseum.org/public/collection/v1/search?q=&isHighlight=true`,
@@ -31,7 +31,7 @@ export default class SwipeViewModel {
 
       const shuffled = [...data.objectIDs]
         //.sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, count);
+      return shuffled;
     } catch (error) {
       console.error('获取艺术品ID列表失败:', error);
       throw new Error('Fetch failed ' + error);
@@ -50,9 +50,9 @@ export default class SwipeViewModel {
       this.currentIndex = -1;
       this.currentArtwork = null;
 
-      const artworkIDs = await this.fetchRandomArtworkIDs(10);
-      if (artworkIDs.length > 0) {
-        await this.loadArtworkByIndex(0, artworkIDs[0]);
+      this.artworkIDs = await this.fetchRandomArtworkIDs();
+      if (this.artworkIDs.length > 0) {
+        await this.loadArtworkByIndex(0, this.artworkIDs[0]);
       }
     } catch (error) {
       console.error('初始化失败:', error);
@@ -64,7 +64,7 @@ export default class SwipeViewModel {
 
   // 根据索引加载艺术品
   private async loadArtworkByIndex(index: number, artworkID: number): Promise<void> {
-    if (this.artworks[index]) {
+    if (this.artworks[index]) { //初始化时这里是空，虽然加载了artworkId的列表，但是没有对id请求艺术品详情，所以没有艺术品详情列表
       this.currentIndex = index;
       this.updateCurrentArtwork();
       return;
@@ -104,9 +104,8 @@ export default class SwipeViewModel {
         return;
       }
 
-      const artworkIDs = await this.fetchRandomArtworkIDs(10);
-      if (artworkIDs.length > 0) {
-        await this.loadArtworkByIndex(nextIndex, artworkIDs[nextIndex]);
+      if (this.artworkIDs.length > 0) {
+        await this.loadArtworkByIndex(nextIndex, this.artworkIDs[nextIndex]);
       }
     } catch (error) {
       console.error('滑动到下一张失败:', error);
