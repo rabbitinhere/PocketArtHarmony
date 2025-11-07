@@ -16,6 +16,7 @@ export default class TabMainViewModel {
   // 新增实例变量
   private allObjectIDs: number[] = [];
   private currentPage: number = 0;
+  @Track searchKeyword: string = ""; // 新增：搜索关键词
 
   async loadArtworks() {
     this.isInitLoading = true;
@@ -37,6 +38,42 @@ export default class TabMainViewModel {
       await this.loadNextPage(true);
     } catch (e) {
       console.error('初始化加载失败:', e);
+    } finally {
+      this.isInitLoading = false;
+    }
+  }
+
+  // 新增：搜索艺术品方法
+  async searchArtworks() {
+    if (!this.searchKeyword.trim()) {
+      // 如果搜索关键词为空，则加载默认列表
+      await this.loadArtworks();
+      return;
+    }
+
+    this.isInitLoading = true;
+    try {
+      // 清空原有数据
+      this.things = new ThingViewModelArray();
+
+      const artListResp = await HttpHelper.getInstance().request(
+        `https://collectionapi.metmuseum.org/public/collection/v1/search?q=${encodeURIComponent(this.searchKeyword)}&isHighlight=true`,
+        { method: http.RequestMethod.GET }
+      )
+
+      const artLIstRespBean = JSON.parse(artListResp.result as string) as ArtworkListResp;
+      this.allObjectIDs = artLIstRespBean.objectIDs;
+      this.currentPage = 0;
+      this.hasMoreData = this.allObjectIDs.length > 0;
+
+      if (this.hasMoreData) {
+        await this.loadNextPage(true);
+      } else {
+        // 没有搜索结果
+        this.things = new ThingViewModelArray();
+      }
+    } catch (e) {
+      console.error('搜索失败:', e);
     } finally {
       this.isInitLoading = false;
     }

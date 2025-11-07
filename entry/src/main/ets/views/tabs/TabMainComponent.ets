@@ -1,5 +1,4 @@
 import TabMainViewModel from "../../viewModel/TabMainViewModel";
-
 import { OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
 
 @Component
@@ -9,8 +8,9 @@ export struct TabMainComponent {
   aboutToAppear() {
     this.todoListViewModel.loadArtworks();
   }
+
   build() {
-    Stack() { // ✅ 使用 Stack 让 Loading 层叠在列表上
+    Stack() { //使用 Stack 让 Loading 层叠在列表上
       Column() {
         if (!this.todoListViewModel.isInitLoading) {
 
@@ -24,6 +24,38 @@ export struct TabMainComponent {
                 .width('100%')
                 .margin({ top: 20, bottom: 20 })
             }
+            ListItem() {
+
+              Row() {
+                // 输入框
+                TextInput({ placeholder: "请输入艺术品名" })
+                  .width('80%')
+                  .height(40)
+                  .backgroundColor('#F5F5F5')
+                  .padding(10)
+                  .borderRadius(8)
+                  .onChange((value: string) => {
+                    this.todoListViewModel.searchKeyword = value;
+                  })
+
+                // 搜索按钮
+                Button('搜索')
+                  .width('18%')
+                  .height(40)
+                  .backgroundColor('#007DFF')
+                  .fontColor(Color.White)
+                  .fontSize(16)
+                  .borderRadius(8)
+                  .margin({ left: 10 })
+                  .onClick(() => {
+                    this.todoListViewModel.searchArtworks();
+                  })
+              }
+              .width('100%')
+              .justifyContent(FlexAlign.SpaceBetween)
+              .margin({ left: 20, right: 20, bottom: 10 })
+            }
+
             ForEach(this.todoListViewModel.things, (item: OneArtworkViewModel, index: number) => {
               ListItem() {
                 Row() {
