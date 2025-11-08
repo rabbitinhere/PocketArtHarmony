@@ -1,7 +1,9 @@
 import { common } from '@kit.AbilityKit';
 import SwipeViewModel from '../viewModel/SwipeViewModel';
+import TabHistoryViewModel from '../viewModel/TabHistoryViewModel';
 // import ViewModel
 import TabMainViewModel from '../viewModel/TabMainViewModel';
+import { TabHistoryComponent } from '../views/tabs/TabHistoryComponent';
 import { TabMainComponent } from '../views/tabs/TabMainComponent';
 import { TabSwipeComponent } from '../views/tabs/TabSwipeComponent';
 
@@ -11,6 +13,7 @@ import { TabSwipeComponent } from '../views/tabs/TabSwipeComponent';
 struct MainPage {
   @State todoListViewModel: TabMainViewModel = new TabMainViewModel();
   @State swipeViewModel: SwipeViewModel = new SwipeViewModel();
+  @State tabHistoryViewModel: TabHistoryViewModel = new TabHistoryViewModel();
   @State currentPage: number = 0; // 当前页面索引
   private context = this.getUIContext().getHostContext() as common.UIAbilityContext;
 
@@ -34,11 +37,8 @@ struct MainPage {
         // 页面2
         TabSwipeComponent({ swipeViewModel: this.swipeViewModel }).visibility(this.currentPage === 1 ? Visibility.Visible : Visibility.None)
 
-        // 页面3
-          Text('页面3')
-            .fontSize(30)
-            .fontWeight(FontWeight.Bold)
-            .align(Alignment.Center).visibility(this.currentPage === 2 ? Visibility.Visible : Visibility.None)
+        TabHistoryComponent({ tabHistoryViewModel: this.tabHistoryViewModel }).visibility(this.currentPage === 2 ? Visibility.Visible : Visibility.None)
+
       }
       .height('90%')
 
