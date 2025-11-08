@@ -23,8 +23,6 @@ export struct TabHistoryComponent {
     return years;
   }
 
-
-
   // 生成测试图片数据（5张小图片）
   private generateSampleImages(): string[] {
     return [
@@ -35,6 +33,7 @@ export struct TabHistoryComponent {
       'sample_image_5'
     ];
   }
+
   aboutToAppear() {
   }
 
@@ -69,37 +68,47 @@ export struct TabHistoryComponent {
     }
   }
 
-  // 时间轴项组件
+  // 时间轴项组件 - 修正时间轴连线问题
   @Builder
   YearTimelineItem(item: TimelineItemParams) {
     Row() {
       // 左侧时间轴区域
       Column() {
-        // 上半部分竖线（首项不需要）
-        if (!item.isFirst) {
+        // 时间轴竖线容器 - 使用绝对定位确保连线连续
+        Column() {
+          // 完整的竖线背景（贯穿整个区域）
           Column()
             .width(2)
-            .height('50%')
-            .backgroundColor('#007DFF')
+            .height('100%')
+            .backgroundColor('#E5E5E5') // 浅灰色背景线
             .alignSelf(ItemAlign.Center)
-        }
+            .position({ x: 0, y: 0 })
 
-        // 年份圆点
-        Circle()
-          .width(20)
-          .height(20)
-          .fill('#007DFF')
-          .stroke('#FFFFFF')
-          .strokeWidth(2)
+          // 高亮的活动线段（根据位置调整）
+          Column() {
+              // 中间项：显示完整竖线
+              Column()
+                .width(2)
+                .height('100%')
+                .backgroundColor('#007DFF')
+                .alignSelf(ItemAlign.Center)
+          }
+          .width(2)
+          .height('100%')
+          .alignSelf(ItemAlign.Center)
 
-        // 下半部分竖线（末项不需要）
-        if (!item.isLast) {
-          Column()
-            .width(2)
-            .height('50%')
-            .backgroundColor('#007DFF')
-            .alignSelf(ItemAlign.Center)
+          // 年份圆点（在最上层）
+          Circle()
+            .width(20)
+            .height(20)
+            .fill('#007DFF')
+            .stroke('#FFFFFF')
+            .strokeWidth(2)
         }
+        .width(2)
+        .height('100%')
+        .alignItems(HorizontalAlign.Center)
+        .justifyContent(FlexAlign.Center)
       }
       .width(60)
       .height('100%')
