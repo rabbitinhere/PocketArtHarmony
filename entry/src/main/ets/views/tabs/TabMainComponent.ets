@@ -27,33 +27,33 @@ export struct TabMainComponent {
             ListItem() {
 
               Row() {
-                // 输入框
+                // 输入框 - 使用 layoutWeight 自动填充剩余空间
                 TextInput({ placeholder: "请输入艺术品名" })
-                  .width('80%')
+                  .layoutWeight(1) // 占据剩余所有空间
                   .height(40)
-                  .backgroundColor('#F5F5F5')
+                  .backgroundColor('#F0F0F0')
                   .padding(10)
                   .borderRadius(8)
+                  .margin({ left: 10, right: 10 }) // 用右边距替代左侧的 margin
                   .onChange((value: string) => {
                     this.todoListViewModel.searchKeyword = value;
                   })
 
-                // 搜索按钮
+                // 搜索按钮 - 固定宽度
                 Button('搜索')
-                  .width('18%')
+                  .width(80) // 固定宽度
                   .height(40)
                   .backgroundColor('#007DFF')
                   .fontColor(Color.White)
                   .fontSize(16)
                   .borderRadius(8)
-                  .margin({ left: 10 })
                   .onClick(() => {
                     this.todoListViewModel.searchArtworks();
-                  })
+                  }).margin({ right: 10 })
               }
               .width('100%')
               .justifyContent(FlexAlign.SpaceBetween)
-              .margin({ left: 20, right: 20, bottom: 10 })
+              .margin({ bottom: 10 })
             }
 
             ForEach(this.todoListViewModel.things, (item: OneArtworkViewModel, index: number) => {
