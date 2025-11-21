@@ -5,7 +5,7 @@ export class HttpHelper {
   private requestQueue: Array<() => void> = [];
   private isProcessing = false;
   private lastRequestTime = 0;
-  private readonly MIN_REQUEST_INTERVAL = 2000; // 最小请求间隔500ms（2次/秒）
+  private readonly MIN_REQUEST_INTERVAL = 20; // 大都会网站说，不能大于1秒80次请求，我设置成1秒50次以内（20毫秒一次）
 
   private constructor() {
   }
