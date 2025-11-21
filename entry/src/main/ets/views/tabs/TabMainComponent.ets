@@ -100,8 +100,10 @@ export struct TabMainComponent {
               .visibility(this.todoListViewModel.hasMoreData ? Visibility.Visible : Visibility.None)
             }
           }.onReachEnd(() => {
-            console.info("reach_end_load")
-            this.todoListViewModel.loadNextPage(false);
+            if (!this.todoListViewModel.isLoadingMore && this.todoListViewModel.hasMoreData) {
+              console.info("reach_end_load")
+              this.todoListViewModel.loadNextPage(false);
+            }
           })
         }
       }

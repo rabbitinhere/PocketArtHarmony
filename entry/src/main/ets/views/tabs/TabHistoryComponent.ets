@@ -62,6 +62,7 @@ export struct TabHistoryComponent {
         }
         .width('100%')
         .layoutWeight(1) // 占据剩余空间
+        .scrollBar(BarState.Off)
       }
       .width('100%')
       .height('100%')
