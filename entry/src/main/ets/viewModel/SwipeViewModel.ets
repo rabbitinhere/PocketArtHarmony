@@ -1,7 +1,14 @@
 import { OneArtworkViewModel } from "./OneArtworkViewModel";
 import { http } from '@kit.NetworkKit';
 import { HttpHelper } from "../http/NetworkService";
-import { ArtworkListResp } from "./TabMainViewModel";
+// 假设您有一个 ArtworkListResp 类型，这里保持原样
+// import { ArtworkListResp } from "./TabMainViewModel";
+
+// 假设 ArtworkListResp 的类型定义
+interface ArtworkListResp {
+  objectIDs: number[];
+  total: number;
+}
 
 @Observed
 export default class SwipeViewModel {
@@ -10,12 +17,16 @@ export default class SwipeViewModel {
   @Track isLoading: boolean = false;
   @Track errorMessage: string = '';
   @Track currentArtwork: OneArtworkViewModel | null = null;
-  @Track nextArtwork: OneArtworkViewModel | null = null; // 新增：下一张的引用，用于UI预渲染
-  @Track prevArtwork: OneArtworkViewModel | null = null; // 新增：上一张的引用
+  @Track nextArtwork: OneArtworkViewModel | null = null; // 下一张的引用
+  @Track prevArtwork: OneArtworkViewModel | null = null; // 上一张的引用
 
   @Track artworkIDs: number[] = [];
 
-  // 统一更新当前、上一张、下一张的引用
+  // 【修复点 1】：将 Getter 属性改为 @Track 属性
+  @Track canSwipePrevious: boolean = false;
+  @Track canSwipeNext: boolean = false;
+
+  // 统一更新当前、上一张、下一张的引用和状态
   private updateArtworks() {
     this.currentArtwork = this.artworks[this.currentIndex] || null;
     this.prevArtwork = this.artworks[this.currentIndex - 1] || null;
@@ -24,11 +35,15 @@ export default class SwipeViewModel {
     const nextIndex = this.currentIndex + 1;
     this.nextArtwork = this.artworks[nextIndex] || null;
 
+    // 【修复点 2】：在这里计算并更新 @Track 属性
+    this.canSwipePrevious = this.currentIndex > 0;
+    this.canSwipeNext = this.currentIndex < this.artworkIDs.length - 1;
+
     // 触发预加载下一张
     this.preloadNextArtwork();
   }
 
-  // 获取随机艺术品ID列表
+  // 获取随机艺术品ID列表 (保持不变)
   private async fetchRandomArtworkIDs(): Promise<number[]> {
     try {
       const response = await HttpHelper.getInstance().request(
@@ -67,7 +82,7 @@ export default class SwipeViewModel {
 
       this.artworkIDs = await this.fetchRandomArtworkIDs();
 
-      // 找到第一张有图的
+      // 【修复点 3】：循环查找第一个有图的ID作为初始图
       if (this.artworkIDs.length > 0) {
         for (let i = 0; i < this.artworkIDs.length; i++) {
           const success = await this.loadArtworkByIndex(i, this.artworkIDs[i]);
@@ -89,31 +104,35 @@ export default class SwipeViewModel {
 
   /**
    * 加载指定索引的艺术品
+   * @returns true 如果成功加载且有 primaryImageSmall，否则 false
    */
   private async loadArtworkByIndex(index: number, artworkID: number): Promise<boolean> {
     // 如果缓存里已经有了
-    if (this.artworks[index]) {
-      // 如果是为了初始化，需要设置 currentIndex
+    if (this.artworks[index] && this.artworks[index].artwork.primaryImageSmall) {
       if (this.currentIndex === -1) {
         this.currentIndex = index;
         this.updateArtworks();
       } else if (index === this.currentIndex + 1) {
-        // 如果是预加载的下一张完成了，更新引用
         this.updateArtworks();
       }
       return true;
+    }
+
+    // 如果已缓存但没图，则直接返回 false，让上层逻辑继续找
+    if (this.artworks[index] && !this.artworks[index].artwork.primaryImageSmall) {
+      return false;
     }
 
     try {
       const artworkVM = new OneArtworkViewModel();
       await artworkVM.fetchArtworkData(artworkID);
 
-      // 必须要有一张小图
+      this.artworks[index] = artworkVM; // 占位，避免重复请求
+
+      // 【关键修复】：如果没图，返回 false，让上层循环继续
       if (!artworkVM.artwork.primaryImageSmall) {
         return false;
       }
-
-      this.artworks[index] = artworkVM;
 
       // 如果当前还未设置初始图，或者加载的是当前/下一张，刷新视图状态
       if (this.currentIndex === -1) {
@@ -123,8 +142,9 @@ export default class SwipeViewModel {
 
       return true;
     } catch (error) {
+      // 加载失败，也返回 false，让上层逻辑继续找下一个
       console.error(`加载艺术品 ${artworkID} 失败`);
-      return true; // 出错也返回true避免死循环，只是没图显示而已
+      return false;
     }
   }
 
@@ -135,7 +155,7 @@ export default class SwipeViewModel {
     const nextIndex = this.currentIndex + 1;
     if (nextIndex >= this.artworkIDs.length) return;
 
-    // 如果已经存在，不需要加载
+    // 如果已经存在或正在加载，不需要操作
     if (this.artworks[nextIndex]) return;
 
     // 异步加载，不使用 await 阻塞
@@ -149,40 +169,48 @@ export default class SwipeViewModel {
   }
 
   // UI动画结束后调用：确认切换到下一张
-  confirmSwipeToNext() {
+  async confirmSwipeToNext(): Promise<void> {
     const nextIndex = this.currentIndex + 1;
-    if (nextIndex < this.artworkIDs.length && this.artworks[nextIndex]) {
-      this.currentIndex = nextIndex;
-      this.updateArtworks();
-    } else {
-      // 如果滑过去发现没数据（极少情况），尝试紧急加载或回滚
-      console.info("下一张尚未加载完成");
+
+    // 逻辑修正：找下一个有图的ID
+    if (nextIndex < this.artworkIDs.length) {
+      this.isLoading = true;
+      try {
+        for (let i = nextIndex; i < this.artworkIDs.length; i++) {
+          const success = await this.loadArtworkByIndex(i, this.artworkIDs[i]);
+          if (success) {
+            this.currentIndex = i;
+            this.updateArtworks();
+            break;
+          }
+        }
+      } finally {
+        this.isLoading = false;
+      }
     }
   }
 
   // UI动画结束后调用：确认切换到上一张
   confirmSwipeToPrevious() {
     const prevIndex = this.currentIndex - 1;
-    if (prevIndex >= 0 && this.artworks[prevIndex]) {
-      this.currentIndex = prevIndex;
-      this.updateArtworks();
+    // 逻辑修正：往前找第一个有图的
+    for (let i = prevIndex; i >= 0; i--) {
+      if (this.artworks[i] && this.artworks[i].artwork.primaryImageSmall) {
+        this.currentIndex = i;
+        this.updateArtworks();
+        return;
+      }
     }
   }
 
-  get canSwipePrevious(): boolean {
-    return this.currentIndex > 0;
-  }
-
-  get canSwipeNext(): boolean {
-    // 只要ID列表还有，理论上就可以滑，即使图还没加载出来（会显示占位）
-    return this.currentIndex < this.artworkIDs.length - 1;
-  }
-
+  // 移除 Getter，仅保留 @Track 属性
   reset(): void {
     this.artworks = [];
     this.currentIndex = -1;
     this.currentArtwork = null;
     this.nextArtwork = null;
     this.errorMessage = '';
+    this.canSwipePrevious = false;
+    this.canSwipeNext = false;
   }
 }

@@ -34,10 +34,10 @@ export struct TabSwipeComponent {
     const currentY = event.touches[0].y;
     let deltaY = currentY - this.startY;
 
-    // 边界阻尼：如果是第一张不能下滑，最后一张不能上滑
+    // 边界阻尼：【修复点 4】：直接使用 @Track 属性
     if (deltaY > 0 && !this.swipeViewModel.canSwipePrevious) {
       deltaY = deltaY * 0.3; // 阻尼效果
-    } else if (deltaY < 0 && !(this.swipeViewModel.currentIndex < this.swipeViewModel.artworkIDs.length - 1)) {
+    } else if (deltaY < 0 && !this.swipeViewModel.canSwipeNext) {
       deltaY = deltaY * 0.3;
     }
 
@@ -54,7 +54,8 @@ export struct TabSwipeComponent {
     let willChangeIndex = false;
 
     // 判断意图
-    if (this.currentOffsetY < -threshold && (this.swipeViewModel.currentIndex < this.swipeViewModel.artworkIDs.length - 1)) {
+    // 【修复点 5】：直接使用 @Track 属性
+    if (this.currentOffsetY < -threshold && this.swipeViewModel.canSwipeNext) {
       // 上滑 -> 下一张
       targetOffset = -this.containerHeight;
       willChangeIndex = true;
@@ -80,7 +81,7 @@ export struct TabSwipeComponent {
             this.swipeViewModel.confirmSwipeToPrevious();
           }
         }
-        // 关键：数据切换后，瞬间重置偏移量到0，因为新的"currentArtwork"已经是刚才看到的图了
+        // 关键：数据切换后，瞬间重置偏移量到0
         this.currentOffsetY = 0;
         this.animatedOffset = 0;
       }
@@ -116,7 +117,6 @@ export struct TabSwipeComponent {
 
         // 1. 上一张（Offset: -Height）
         if (this.swipeViewModel.prevArtwork) {
-          // 修复点：使用 Stack 包裹 Builder 调用，再应用 offset
           Stack() {
             this.buildSingleArtwork(this.swipeViewModel.prevArtwork.artwork)
           }
@@ -130,20 +130,18 @@ export struct TabSwipeComponent {
           this.buildSingleArtwork(this.swipeViewModel.currentArtwork.artwork)
         } else {
           // 占位
-          Image($r('app.media.no_img'))
-            .width('100%').height('100%').objectFit(ImageFit.Contain).opacity(0.5)
+          Stack().width('100%').height('100%').backgroundColor(Color.Black)
         }
 
         // 3. 下一张（Offset: +Height）
-        if (this.swipeViewModel.nextArtwork) {
-          // 修复点：使用 Stack 包裹 Builder 调用，再应用 offset
+        if (this.swipeViewModel.nextArtwork && this.swipeViewModel.nextArtwork.artwork.primaryImageSmall) { // 确保下一张有图片才渲染
           Stack() {
             this.buildSingleArtwork(this.swipeViewModel.nextArtwork.artwork)
           }
           .width('100%')
           .height('100%')
           .offset({ y: this.containerHeight })
-        } else if (this.swipeViewModel.currentIndex < this.swipeViewModel.artworkIDs.length - 1) {
+        } else if (this.swipeViewModel.canSwipeNext) {
           // 下一张还没加载好时的占位
           Stack() {
             LoadingProgress().width(50).height(50).color(Color.White)
@@ -170,12 +168,18 @@ export struct TabSwipeComponent {
   @Builder
   buildSingleArtwork(artwork: Artwork) {
     Stack({ alignContent: Alignment.BottomStart }) {
-      Image(artwork.primaryImageSmall)
-        .width('100%')
-        .height('100%')
-        .objectFit(ImageFit.Cover)
-        .interpolation(ImageInterpolation.High)
-        .renderMode(ImageRenderMode.Original)
+      // 【修复点 6】：检查 primaryImageSmall，确保 Image 路径有效，否则使用纯色背景
+      if (artwork.primaryImageSmall) {
+        Image(artwork.primaryImageSmall)
+          .width('100%')
+          .height('100%')
+          .objectFit(ImageFit.Cover)
+          .interpolation(ImageInterpolation.High)
+          .renderMode(ImageRenderMode.Original)
+      } else {
+        // 没有图片路径，显示黑色占位
+        Stack().width('100%').height('100%').backgroundColor(Color.Black)
+      }
 
       // 信息遮罩
       this.buildArtworkInfo(artwork)
@@ -184,7 +188,7 @@ export struct TabSwipeComponent {
     .height('100%')
   }
 
-  // 构建艺术品信息遮罩
+  // ... (其他 Builder 保持不变)
   @Builder
   buildArtworkInfo(artwork: Artwork) {
     Column({ space: 8 }) {
