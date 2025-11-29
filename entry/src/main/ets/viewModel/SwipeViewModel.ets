@@ -43,6 +43,13 @@ export default class SwipeViewModel {
     this.preloadNextArtwork();
   }
 
+
+  private async timerTest() {
+    setInterval(() => {
+      console.info("ra_todo confirmSwipeToNext  prevArtwork = " + this.prevArtwork?.artwork.primaryImageSmall + "   currentArtwork = " + this.currentArtwork?.artwork.primaryImageSmall + "   nextArtwork = " + this.nextArtwork?.artwork.primaryImageSmall)
+    }, 1000);
+  }
+
   // 获取随机艺术品ID列表 (保持不变)
   private async fetchRandomArtworkIDs(): Promise<number[]> {
     try {
@@ -189,7 +196,7 @@ export default class SwipeViewModel {
       }
     }
 
-    console.info("ra_todo confirmSwipeToNext  prevArtwork = " + this.prevArtwork?.artwork.primaryImageSmall + "   currentArtwork = " + this.currentArtwork?.artwork.primaryImageSmall + "   nextArtwork = " + this.nextArtwork?.artwork.primaryImageSmall)
+    this.timerTest()
   }
 
   // UI动画结束后调用：确认切换到上一张
