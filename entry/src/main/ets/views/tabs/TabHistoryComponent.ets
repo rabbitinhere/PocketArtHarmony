@@ -163,7 +163,7 @@ export struct TabHistoryComponent {
         Row() {
           // 只显示前两张图片 - 直接使用 params.item.artworkList
           ForEach(params.item.artworkList.slice(0, 2), (artwork: TimelineArtwork) => {
-            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.startIcon'))
+            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.no_img'))
               .width(this.IMAGE_SIZE)
               .height(this.IMAGE_SIZE)
               .objectFit(ImageFit.Cover)
@@ -186,7 +186,7 @@ export struct TabHistoryComponent {
         Row() {
           // 显示第三、第四张图片 - 直接使用 params.item.artworkList
           ForEach(params.item.artworkList.slice(2, 4), (artwork: TimelineArtwork) => {
-            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.startIcon'))
+            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.no_img'))
               .width(this.IMAGE_SIZE)
               .height(this.IMAGE_SIZE)
               .objectFit(ImageFit.Cover)
