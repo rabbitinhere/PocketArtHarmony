@@ -1,55 +1,92 @@
 import SwipeViewModel from "../../viewModel/SwipeViewModel";
+import { Artwork } from "../../viewModel/OneArtworkViewModel";
 
 @Component
 export struct TabSwipeComponent {
   @Link swipeViewModel: SwipeViewModel;
 
-  // 手势相关状态
+  // 手势与动画状态
   @State private startY: number = 0;
-  @State private currentOffsetY: number = 0;
+  @State private currentOffsetY: number = 0; // 手指拖动的实时偏移
+  @State private animatedOffset: number = 0; // 动画的目标偏移
   @State private isSwiping: boolean = false;
+  @State private containerHeight: number = 0; // 容器高度
 
   aboutToAppear() {
     this.swipeViewModel.initialize();
   }
 
-  // 处理触摸开始
+  // 触摸开始
   private handleTouchStart(event: TouchEvent) {
     if (this.swipeViewModel.isLoading) return;
-
     this.startY = event.touches[0].y;
     this.isSwiping = true;
-    this.currentOffsetY = 0;
+
+    // 停止之前的动画，从当前位置开始
+    this.currentOffsetY = this.animatedOffset;
+    this.animatedOffset = this.currentOffsetY;
   }
 
-  // 处理触摸移动
+  // 触摸移动（跟手逻辑）
   private handleTouchMove(event: TouchEvent) {
-    if (!this.isSwiping || this.swipeViewModel.isLoading) return;
+    if (!this.isSwiping || this.swipeViewModel.isLoading || this.containerHeight === 0) return;
 
     const currentY = event.touches[0].y;
-    this.currentOffsetY = currentY - this.startY;
-  }
+    let deltaY = currentY - this.startY;
 
-  // 处理触摸结束
-  private handleTouchEnd() {
-    if (!this.isSwiping || this.swipeViewModel.isLoading) return;
-
-    this.isSwiping = false;
-
-    // 滑动距离阈值
-    const threshold = 100;
-
-    if (this.currentOffsetY < -threshold) {
-      console.info("ra_todo 上滑")
-      // 上滑 - 下一张
-      this.swipeViewModel.swipeToNext();
-    } else if (this.currentOffsetY > threshold && this.swipeViewModel.canSwipePrevious) {
-      console.info("ra_todo 下滑")
-      // 下滑 - 上一张
-      this.swipeViewModel.swipeToPrevious();
+    // 边界阻尼：如果是第一张不能下滑，最后一张不能上滑
+    if (deltaY > 0 && !this.swipeViewModel.canSwipePrevious) {
+      deltaY = deltaY * 0.3; // 阻尼效果
+    } else if (deltaY < 0 && !this.swipeViewModel.canSwipeNext) {
+      deltaY = deltaY * 0.3;
     }
 
-    this.currentOffsetY = 0;
+    this.currentOffsetY = deltaY;
+  }
+
+  // 触摸结束（翻页判断）
+  private handleTouchEnd() {
+    if (!this.isSwiping || this.swipeViewModel.isLoading) return;
+    this.isSwiping = false;
+
+    const threshold = this.containerHeight / 4; // 滑动超过1/4屏幕则翻页
+    let targetOffset = 0;
+    let willChangeIndex = false;
+
+    // 判断意图
+    if (this.currentOffsetY < -threshold && this.swipeViewModel.canSwipeNext) {
+      // 上滑 -> 下一张
+      targetOffset = -this.containerHeight;
+      willChangeIndex = true;
+    } else if (this.currentOffsetY > threshold && this.swipeViewModel.canSwipePrevious) {
+      // 下滑 -> 上一张
+      targetOffset = this.containerHeight;
+      willChangeIndex = true;
+    } else {
+      // 回弹
+      targetOffset = 0;
+      willChangeIndex = false;
+    }
+
+    // 执行动画
+    animateTo({
+      duration: 300,
+      curve: Curve.FastOutSlowIn,
+      onFinish: () => {
+        if (willChangeIndex) {
+          if (targetOffset < 0) {
+            this.swipeViewModel.confirmSwipeToNext();
+          } else {
+            this.swipeViewModel.confirmSwipeToPrevious();
+          }
+        }
+        // 关键：数据切换后，瞬间重置偏移量到0，因为新的"currentArtwork"已经是刚才看到的图了
+        this.currentOffsetY = 0;
+        this.animatedOffset = 0;
+      }
+    }, () => {
+      this.animatedOffset = targetOffset;
+    })
   }
 
   build() {
@@ -57,165 +94,150 @@ export struct TabSwipeComponent {
       // 主要内容区域
       this.buildContent()
 
-      // 加载指示器
+      // 辅助层
       this.buildLoadingIndicator()
-
-      // 错误提示
       this.buildErrorTip()
-
-      // 操作提示
       this.buildSwipeHint()
     }
     .width('100%')
     .height('100%')
     .backgroundColor(Color.Black)
+    .onAreaChange((oldV, newV) => {
+      this.containerHeight = newV.height as number;
+    })
   }
 
-  // 构建内容区域
+  // 构建内容区域：包含 上一张、当前、下一张
   @Builder
   buildContent() {
     Column() {
-      if (this.swipeViewModel.currentArtwork) {
-        // 艺术品图片
-        Image(this.swipeViewModel.currentArtwork.artwork.primaryImageSmall)
+      // 核心布局：Stack 包含三张图
+      Stack({ alignContent: Alignment.TopStart }) {
+
+        // 1. 上一张（Offset: -Height）
+        if (this.swipeViewModel.prevArtwork) {
+          // 修复点：使用 Stack 包裹 Builder 调用，再应用 offset
+          Stack() {
+            this.buildSingleArtwork(this.swipeViewModel.prevArtwork.artwork)
+          }
           .width('100%')
           .height('100%')
-          .objectFit(ImageFit.Cover)
-          .interpolation(ImageInterpolation.High) // 高质量插值
-          .renderMode(ImageRenderMode.Original) // 原图渲染
+          .offset({ y: -this.containerHeight })
+        }
 
-        // 艺术品信息遮罩
-        this.buildArtworkInfo()
-      } else {
-        // 无数据时的占位图
-        Image($r('app.media.no_img'))
-          .width(120)
-          .height(120)
-          .objectFit(ImageFit.Contain)
-          .opacity(0.5)
+        // 2. 当前张（Offset: 0）
+        if (this.swipeViewModel.currentArtwork) {
+          this.buildSingleArtwork(this.swipeViewModel.currentArtwork.artwork)
+        } else {
+          // 占位
+          Image($r('app.media.no_img'))
+            .width('100%').height('100%').objectFit(ImageFit.Contain).opacity(0.5)
+        }
+
+        // 3. 下一张（Offset: +Height）
+        if (this.swipeViewModel.nextArtwork) {
+          // 修复点：使用 Stack 包裹 Builder 调用，再应用 offset
+          Stack() {
+            this.buildSingleArtwork(this.swipeViewModel.nextArtwork.artwork)
+          }
+          .width('100%')
+          .height('100%')
+          .offset({ y: this.containerHeight })
+        } else if (this.swipeViewModel.canSwipeNext) {
+          // 下一张还没加载好时的占位
+          Stack() {
+            LoadingProgress().width(50).height(50).color(Color.White)
+          }
+          .width('100%').height('100%').backgroundColor(Color.Black)
+          .offset({ y: this.containerHeight })
+        }
       }
+      .width('100%')
+      .height('100%')
+      // 整个容器跟随手指偏移（动画或手势）
+      .offset({ y: this.animatedOffset !== 0 ? this.animatedOffset : this.currentOffsetY })
     }
     .width('100%')
     .height('100%')
     .onTouch((event: TouchEvent) => {
-      if (event.type === TouchType.Down) {
-        this.handleTouchStart(event);
-      } else if (event.type === TouchType.Move) {
-        this.handleTouchMove(event);
-      } else if (event.type === TouchType.Up) {
-        this.handleTouchEnd();
-      }
+      if (event.type === TouchType.Down) this.handleTouchStart(event);
+      else if (event.type === TouchType.Move) this.handleTouchMove(event);
+      else if (event.type === TouchType.Up || event.type === TouchType.Cancel) this.handleTouchEnd();
     })
+  }
+
+  // 封装单个艺术品视图
+  @Builder
+  buildSingleArtwork(artwork: Artwork) {
+    Stack({ alignContent: Alignment.BottomStart }) {
+      Image(artwork.primaryImageSmall)
+        .width('100%')
+        .height('100%')
+        .objectFit(ImageFit.Cover)
+        .interpolation(ImageInterpolation.High)
+        .renderMode(ImageRenderMode.Original)
+
+      // 信息遮罩
+      this.buildArtworkInfo(artwork)
+    }
+    .width('100%')
+    .height('100%')
   }
 
   // 构建艺术品信息遮罩
   @Builder
-  buildArtworkInfo() {
+  buildArtworkInfo(artwork: Artwork) {
     Column({ space: 8 }) {
-      if (this.swipeViewModel.currentArtwork) {
-        Text(this.swipeViewModel.currentArtwork.artwork.title || '未知标题')
-          .fontSize(20)
-          .fontColor(Color.White)
-          .fontWeight(FontWeight.Bold)
-          .maxLines(2)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .textAlign(TextAlign.Start)
+      Text(artwork.title || '未知标题')
+        .fontSize(20).fontColor(Color.White).fontWeight(FontWeight.Bold)
+        .maxLines(2).textOverflow({ overflow: TextOverflow.Ellipsis }).textAlign(TextAlign.Start)
 
-        Text(this.swipeViewModel.currentArtwork.artwork.title || '未知标题')
-          .fontSize(16)
-          .fontColor(Color.White)
-          .opacity(0.9)
+      Text(artwork.title || '未知信息')
+        .fontSize(16).fontColor(Color.White).opacity(0.9)
 
-        Text(this.swipeViewModel.currentArtwork.artwork.title || '未知标题')
-          .fontSize(14)
-          .fontColor(Color.White)
-          .opacity(0.7)
-      }
+      Text(artwork.objectID.toString())
+        .fontSize(14).fontColor(Color.White).opacity(0.7)
     }
     .width('100%')
     .padding({ left: 20, right: 20, bottom: 40 })
     .alignItems(HorizontalAlign.Start)
     .justifyContent(FlexAlign.End)
     .height('100%')
-    .backgroundBlurStyle(BlurStyle.Thin)
-    .backdropBlur(10)
     .linearGradient({
-      angle: 180,  // 修正：去掉引号，使用数字
-      colors: [[0x00000000, 0x00000080], [0x00000080, 0x000000E6]]  // 修正：使用16进制数字
+      angle: 180,
+      colors: [[0x00000000, 0.0], [0x000000E6, 1.0]]
     })
   }
-  // 构建加载指示器
+
   @Builder
   buildLoadingIndicator() {
-    if (this.swipeViewModel.isLoading) {
+    if (this.swipeViewModel.isLoading && !this.swipeViewModel.currentArtwork) {
       Column() {
-        LoadingProgress()
-          .width(40)
-          .height(40)
-          .color(Color.White)
-
-        Text('加载中...')
-          .fontSize(16)
-          .fontColor(Color.White)
-          .margin({ top: 12 })
+        LoadingProgress().width(40).height(40).color(Color.White)
+        Text('加载中...').fontSize(16).fontColor(Color.White).margin({ top: 12 })
       }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
-      .backgroundColor('#00000040')
+      .width('100%').height('100%').justifyContent(FlexAlign.Center).backgroundColor('#00000040')
     }
   }
 
-  // 构建错误提示
   @Builder
   buildErrorTip() {
     if (this.swipeViewModel.errorMessage) {
       Column() {
-        Text(this.swipeViewModel.errorMessage)
-          .fontSize(16)
-          .fontColor(Color.White)
-          .padding(16)
-          .backgroundColor('#FF000080')
-          .borderRadius(8)
-
-        Button('重试')
-          .fontSize(14)
-          .fontColor(Color.White)
-          .backgroundColor('#007DFF')
-          .padding({ left: 24, right: 24, top: 8, bottom: 8 })
-          .margin({ top: 12 })
-          .borderRadius(20)
-          .onClick(() => {
-            this.swipeViewModel.initialize();
-          })
+        Text(this.swipeViewModel.errorMessage).fontSize(16).fontColor(Color.White).padding(16).backgroundColor('#FF000080').borderRadius(8)
+        Button('重试').fontSize(14).fontColor(Color.White).backgroundColor('#007DFF').margin({ top: 12 })
+          .onClick(() => this.swipeViewModel.initialize())
       }
-      .width('100%')
-      .height('100%')
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center)
+      .width('100%').height('100%').justifyContent(FlexAlign.Center)
     }
   }
 
-  // 构建滑动提示
   @Builder
   buildSwipeHint() {
-    if (!this.swipeViewModel.isLoading &&
-      !this.swipeViewModel.errorMessage &&
-    this.swipeViewModel.currentArtwork) {
-
+    if (!this.swipeViewModel.isLoading && !this.swipeViewModel.errorMessage && this.swipeViewModel.currentArtwork) {
       Column() {
-        Text('上滑查看下一张 • 下滑回到上一张')
-          .fontSize(14)
-          .fontColor(Color.White)
-          .opacity(0.8)
-          .padding({ left: 20, right: 20, top: 12, bottom: 12 })
-          .backgroundColor('#00000060')
-          .borderRadius(20)
-      }
-      .width('100%')
-      .margin({ top: 60 })
-      .alignItems(HorizontalAlign.Center)
+        Text('上滑查看更多').fontSize(12).fontColor(Color.White).opacity(0.6)
+      }.width('100%').margin({ top: 60 }).alignItems(HorizontalAlign.Center)
     }
   }
 }

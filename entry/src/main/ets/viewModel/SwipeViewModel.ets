@@ -9,11 +9,23 @@ export default class SwipeViewModel {
   @Track artworks: OneArtworkViewModel[] = [];
   @Track isLoading: boolean = false;
   @Track errorMessage: string = '';
-  @Track currentArtwork: OneArtworkViewModel | null = null; // 改为普通属性
-  artworkIDs: number[] = [];
-  // 更新当前艺术品的方法
-  private updateCurrentArtwork() {
+  @Track currentArtwork: OneArtworkViewModel | null = null;
+  @Track nextArtwork: OneArtworkViewModel | null = null; // 新增：下一张的引用，用于UI预渲染
+  @Track prevArtwork: OneArtworkViewModel | null = null; // 新增：上一张的引用
+
+  @Track artworkIDs: number[] = [];
+
+  // 统一更新当前、上一张、下一张的引用
+  private updateArtworks() {
     this.currentArtwork = this.artworks[this.currentIndex] || null;
+    this.prevArtwork = this.artworks[this.currentIndex - 1] || null;
+
+    // 尝试获取下一张，如果不存在则触发预加载
+    const nextIndex = this.currentIndex + 1;
+    this.nextArtwork = this.artworks[nextIndex] || null;
+
+    // 触发预加载下一张
+    this.preloadNextArtwork();
   }
 
   // 获取随机艺术品ID列表
@@ -29,16 +41,18 @@ export default class SwipeViewModel {
         throw new Error('未找到艺术品数据');
       }
 
-      const shuffled = [...data.objectIDs].sort(() => 0.5 - Math.random());
-        //;
+      // 截取一部分避免数据量过大，并打乱
+      const shuffled = [...data.objectIDs].sort(() => 0.5 - Math.random()).slice(0, 50);
       return shuffled;
     } catch (error) {
-      console.error('获取艺术品ID列表失败:', error);
-      throw new Error('Fetch failed ' + error);
+      let msg = '';
+      if (error instanceof Error) msg = error.message;
+      console.error('获取艺术品ID列表失败:', msg);
+      throw new Error('Fetch failed ' + msg);
     }
   }
 
-  // 初始化加载第一张图片
+  // 初始化加载
   async initialize(): Promise<void> {
     if (this.isLoading) return;
 
@@ -49,37 +63,44 @@ export default class SwipeViewModel {
       this.artworks = [];
       this.currentIndex = -1;
       this.currentArtwork = null;
+      this.nextArtwork = null;
 
       this.artworkIDs = await this.fetchRandomArtworkIDs();
+
+      // 找到第一张有图的
       if (this.artworkIDs.length > 0) {
-        // 循环遍历所有艺术品ID，直到找到一个有图片的艺术品
         for (let i = 0; i < this.artworkIDs.length; i++) {
           const success = await this.loadArtworkByIndex(i, this.artworkIDs[i]);
           if (success) {
-            break; // 如果加载成功（有图片），则跳出循环
+            // loadArtworkByIndex 内部会更新 currentIndex 和 updateArtworks
+            break;
           }
-          // 如果加载失败（没有图片），继续尝试下一个
         }
       }
     } catch (error) {
-      console.error('初始化失败:', error);
+      let msg = '';
+      if (error instanceof Error) msg = error.message;
+      console.error('初始化失败:', msg);
       this.errorMessage = '加载失败，请重试';
     } finally {
       this.isLoading = false;
     }
   }
 
-
   /**
-   * 根据索引加载艺术品
-   * @param index
-   * @param artworkID
-   * @returns false：这个艺术品没有图片， true：这个艺术品有图片或者网络错误
+   * 加载指定索引的艺术品
    */
   private async loadArtworkByIndex(index: number, artworkID: number): Promise<boolean> {
-    if (this.artworks[index]) { //初始化时这里是空，虽然加载了artworkId的列表，但是没有对id请求艺术品详情，所以没有艺术品详情列表
-      this.currentIndex = index;
-      this.updateCurrentArtwork();
+    // 如果缓存里已经有了
+    if (this.artworks[index]) {
+      // 如果是为了初始化，需要设置 currentIndex
+      if (this.currentIndex === -1) {
+        this.currentIndex = index;
+        this.updateArtworks();
+      } else if (index === this.currentIndex + 1) {
+        // 如果是预加载的下一张完成了，更新引用
+        this.updateArtworks();
+      }
       return true;
     }
 
@@ -87,99 +108,81 @@ export default class SwipeViewModel {
       const artworkVM = new OneArtworkViewModel();
       await artworkVM.fetchArtworkData(artworkID);
 
+      // 必须要有一张小图
       if (!artworkVM.artwork.primaryImageSmall) {
         return false;
       }
 
       this.artworks[index] = artworkVM;
-      this.currentIndex = index;
-      this.updateCurrentArtwork(); // 更新当前艺术品
+
+      // 如果当前还未设置初始图，或者加载的是当前/下一张，刷新视图状态
+      if (this.currentIndex === -1) {
+        this.currentIndex = index;
+      }
+      this.updateArtworks();
+
       return true;
     } catch (error) {
-      console.error(`加载艺术品 ${artworkID} 失败:`, error);
-      return true;
+      console.error(`加载艺术品 ${artworkID} 失败`);
+      return true; // 出错也返回true避免死循环，只是没图显示而已
     }
   }
 
+  /**
+   * 预加载下一张（静默执行，不阻塞UI）
+   */
+  private preloadNextArtwork() {
+    const nextIndex = this.currentIndex + 1;
+    if (nextIndex >= this.artworkIDs.length) return;
 
-  // 滑动到下一张（上滑）
-  async swipeToNext(): Promise<void> {
-    if (this.isLoading) return;
+    // 如果已经存在，不需要加载
+    if (this.artworks[nextIndex]) return;
 
-    this.isLoading = true;
-    this.errorMessage = '';
+    // 异步加载，不使用 await 阻塞
+    this.loadArtworkByIndex(nextIndex, this.artworkIDs[nextIndex])
+      .then(() => {
+        // 加载完成后 updateArtworks 会被调用
+      })
+      .catch((e: Error) => {
+        console.error(`预加载失败: ${e.message}`);
+      });
+  }
 
-    try {
-      const nextIndex = this.currentIndex + 1;
-
-      if (this.artworks[nextIndex]) {
-        this.currentIndex = nextIndex;
-        this.updateCurrentArtwork();
-        this.isLoading = false;
-        return;
-      }
-
-      if (this.artworkIDs.length > 0) {
-        if (this.artworkIDs.length > 0) {
-          // 循环遍历所有艺术品ID，直到找到一个有图片的艺术品
-          for (let i = nextIndex; i < this.artworkIDs.length; i++) {
-            const success = await this.loadArtworkByIndex(i, this.artworkIDs[i]);
-            if (success) {
-              console.info("ra_todo  有图，break ", this.artworkIDs[i])
-              break; // 如果加载成功（有图片），则跳出循环
-            }else {
-              console.info("ra_todo  没有图，continue ", this.artworkIDs[i])
-            }
-            // 如果加载失败（没有图片），继续尝试下一个
-          }
-        }
-      }
-    } catch (error) {
-      console.error('滑动到下一张失败:', error);
-      this.errorMessage = '加载失败，请重试';
-    } finally {
-      this.isLoading = false;
+  // UI动画结束后调用：确认切换到下一张
+  confirmSwipeToNext() {
+    const nextIndex = this.currentIndex + 1;
+    if (nextIndex < this.artworkIDs.length && this.artworks[nextIndex]) {
+      this.currentIndex = nextIndex;
+      this.updateArtworks();
+    } else {
+      // 如果滑过去发现没数据（极少情况），尝试紧急加载或回滚
+      console.info("下一张尚未加载完成");
     }
   }
 
-  // 滑动到上一张（下滑）
-  async swipeToPrevious(): Promise<void> {
-    if (this.isLoading || this.currentIndex <= 0) return;
-
-    this.errorMessage = '';
-
-    for (let i = this.currentIndex - 1; i >= 0; i--) {
-      // 先检查 artworks[i] 是否存在
-      if (!this.artworks[i]) {
-        console.info("ra_todo  artwork不存在，continue ", this.artworkIDs[i]);
-        this.currentIndex = i;
-        continue;
-      }
-
-      const success = this.artworks[i].artwork.primaryImageSmall !== "";
-      if (success) {
-        console.info("ra_todo  有图，break ", this.artworkIDs[i])
-        this.currentIndex = i;
-        break;
-      }else {
-        console.info("ra_todo  没有图，continue ", this.artworkIDs[i])
-        this.currentIndex = i;
-      }
-
+  // UI动画结束后调用：确认切换到上一张
+  confirmSwipeToPrevious() {
+    const prevIndex = this.currentIndex - 1;
+    if (prevIndex >= 0 && this.artworks[prevIndex]) {
+      this.currentIndex = prevIndex;
+      this.updateArtworks();
     }
-    this.updateCurrentArtwork(); // 更新当前艺术品
   }
 
-  // 检查是否可以下滑
   get canSwipePrevious(): boolean {
     return this.currentIndex > 0;
   }
 
-  // 重置状态
+  get canSwipeNext(): boolean {
+    // 只要ID列表还有，理论上就可以滑，即使图还没加载出来（会显示占位）
+    return this.currentIndex < this.artworkIDs.length - 1;
+  }
+
   reset(): void {
     this.artworks = [];
     this.currentIndex = -1;
     this.currentArtwork = null;
+    this.nextArtwork = null;
     this.errorMessage = '';
   }
 }
