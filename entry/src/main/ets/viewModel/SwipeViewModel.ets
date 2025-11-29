@@ -188,6 +188,8 @@ export default class SwipeViewModel {
         this.isLoading = false;
       }
     }
+
+    console.info("ra_todo confirmSwipeToNext  prevArtwork = " + this.prevArtwork?.artwork.primaryImageSmall + "   currentArtwork = " + this.currentArtwork?.artwork.primaryImageSmall + "   nextArtwork = " + this.nextArtwork?.artwork.primaryImageSmall)
   }
 
   // UI动画结束后调用：确认切换到上一张

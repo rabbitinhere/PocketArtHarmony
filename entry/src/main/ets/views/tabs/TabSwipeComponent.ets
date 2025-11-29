@@ -114,7 +114,6 @@ export struct TabSwipeComponent {
     Column() {
       // 核心布局：Stack 包含三张图
       Stack({ alignContent: Alignment.TopStart }) {
-
         // 1. 上一张（Offset: -Height）
         if (this.swipeViewModel.prevArtwork) {
           Stack() {
@@ -207,10 +206,7 @@ export struct TabSwipeComponent {
     .alignItems(HorizontalAlign.Start)
     .justifyContent(FlexAlign.End)
     .height('100%')
-    .linearGradient({
-      angle: 180,
-      colors: [[0x00000000, 0.0], [0x000000E6, 1.0]]
-    })
+
   }
 
   @Builder
