@@ -37,7 +37,7 @@ export struct TabSwipeComponent {
     // 边界阻尼：如果是第一张不能下滑，最后一张不能上滑
     if (deltaY > 0 && !this.swipeViewModel.canSwipePrevious) {
       deltaY = deltaY * 0.3; // 阻尼效果
-    } else if (deltaY < 0 && !this.swipeViewModel.canSwipeNext) {
+    } else if (deltaY < 0 && !(this.swipeViewModel.currentIndex < this.swipeViewModel.artworkIDs.length - 1)) {
       deltaY = deltaY * 0.3;
     }
 
@@ -54,7 +54,7 @@ export struct TabSwipeComponent {
     let willChangeIndex = false;
 
     // 判断意图
-    if (this.currentOffsetY < -threshold && this.swipeViewModel.canSwipeNext) {
+    if (this.currentOffsetY < -threshold && (this.swipeViewModel.currentIndex < this.swipeViewModel.artworkIDs.length - 1)) {
       // 上滑 -> 下一张
       targetOffset = -this.containerHeight;
       willChangeIndex = true;
@@ -143,7 +143,7 @@ export struct TabSwipeComponent {
           .width('100%')
           .height('100%')
           .offset({ y: this.containerHeight })
-        } else if (this.swipeViewModel.canSwipeNext) {
+        } else if (this.swipeViewModel.currentIndex < this.swipeViewModel.artworkIDs.length - 1) {
           // 下一张还没加载好时的占位
           Stack() {
             LoadingProgress().width(50).height(50).color(Color.White)
