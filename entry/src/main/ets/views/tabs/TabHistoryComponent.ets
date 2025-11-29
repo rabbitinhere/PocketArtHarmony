@@ -51,7 +51,7 @@ export struct TabHistoryComponent {
                 LoadingProgress()
                   .width(30)
                   .height(30)
-                Text('加载中...')
+                Text('博物馆有访问限制15秒，请耐心等待...')
                   .margin({ left: 8 })
               } else {
                 Text('上拉加载更多')
@@ -204,12 +204,6 @@ export struct TabHistoryComponent {
         .width('100%')
         .justifyContent(FlexAlign.Start)
 
-        // 年份描述文本 - 直接使用 params.item.year
-        Text(`公元${params.item.year >= 0 ? params.item.year : Math.abs(params.item.year)}年${params.item.year >= 0 ? '' : '前'}的代表性艺术作品`)
-          .fontSize(12)
-          .fontColor('#666666')
-          .margin({ top: 8 })
-          .width('100%')
 
         // 提示：如果没有图片，额外显示一个文本提示 - 直接使用 params.item.artworkList
         if (params.item.artworkList.length === 0) {

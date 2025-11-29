@@ -50,6 +50,11 @@ export default class TabHistoryViewModel {
   // 计算总时间段数量
   private totalPeriods: number = Math.floor((this.startYear - this.endYear) / this.step) + 1;
 
+  // 辅助函数：创建延迟
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
 
   // 初始化加载/刷新
   async initLoadYears() {
@@ -126,6 +131,8 @@ export default class TabHistoryViewModel {
 
     if (firstPage == false) {
       this.isLoadingMore = true;
+      console.info("等待 15 秒后加载更多数据...");
+      await this.delay(15000);
     }
 
     try {
@@ -166,6 +173,7 @@ export default class TabHistoryViewModel {
     } finally {
       if (firstPage == false) {
         this.isLoadingMore = false;
+        console.info("加载更多数据完成");
       }
     }
   }
