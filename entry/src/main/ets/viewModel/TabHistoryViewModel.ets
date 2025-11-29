@@ -81,7 +81,10 @@ export default class TabHistoryViewModel {
 
       const objectIDs = searchData.objectIDs;
       if (!objectIDs || objectIDs.length === 0) {
+        console.info(`加载年份范围 ${dateBegin} 至 ${dateEnd} 艺术品为空！`);
         return artworks; // 无结果
+      }else{
+        console.info(`加载年份范围 ${dateBegin} 至 ${dateEnd} 艺术品数量${objectIDs.length}`);
       }
 
       // 2. 取前 4 个 objectIDs 调用详情 API

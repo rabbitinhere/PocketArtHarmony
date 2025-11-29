@@ -21,9 +21,21 @@ export class HttpHelper {
     return new Promise((resolve, reject) => {
       this.addToQueue(async () => {
         try {
-          const result = await this.executeRequest(url, options);
-          resolve(result);
+          const response = await this.executeRequest(url, options);
+
+          // 🌟 添加日志：检查响应状态码和结果
+          if (response.responseCode !== 200) {
+            // 记录失败的请求的详细信息
+            console.error(`[HTTP FAIL] URL: ${url}, Code: ${response.responseCode}, Result: ${response.result}`);
+          } else {
+            // 记录成功的请求（可以精简）
+            console.info(`[HTTP OK] URL: ${url}, Code: ${response.responseCode}`);
+          }
+
+          resolve(response);
         } catch (error) {
+          // 🌟 添加日志：记录请求执行时的异常（例如网络错误、超时等）
+          console.error(`[HTTP ERROR] URL: ${url}, Execution Error: ${JSON.stringify(error)}`);
           reject(error);
         }
       });
@@ -70,7 +82,7 @@ export class HttpHelper {
       return response;
     } finally {
       httpRequest.destroy();
-    console.info("ra_q_size = " + this.requestQueue.length)
+      console.info("ra_q_size = " + this.requestQueue.length)
     }
   }
 
