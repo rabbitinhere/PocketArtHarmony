@@ -129,7 +129,10 @@ export struct TabSwipeComponent {
           this.buildSingleArtwork(this.swipeViewModel.currentArtwork.artwork)
         } else {
           // 占位
-          Stack().width('100%').height('100%').backgroundColor(Color.Black)
+          Stack()
+            .width('100%')
+            .height('100%')
+            .backgroundColor(Color.Black)
         }
 
         // 3. 下一张（Offset: +Height）
@@ -237,7 +240,9 @@ export struct TabSwipeComponent {
     if (!this.swipeViewModel.isLoading && !this.swipeViewModel.errorMessage && this.swipeViewModel.currentArtwork) {
       Column() {
         Text('上滑查看更多').fontSize(12).fontColor(Color.White).opacity(0.6)
-      }.width('100%').margin({ top: 60 }).alignItems(HorizontalAlign.Center)
+      }.width('100%').margin({ top: 60 }).alignItems(HorizontalAlign.Center).onClick(() => {
+        this.swipeViewModel.confirmSwipeToNext()
+      })
     }
   }
 }

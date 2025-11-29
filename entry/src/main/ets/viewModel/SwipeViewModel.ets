@@ -13,7 +13,7 @@ interface ArtworkListResp {
 @Observed
 export default class SwipeViewModel {
   @Track currentIndex: number = -1;
-  @Track artworks: OneArtworkViewModel[] = [];
+  @Track artworks: OneArtworkViewModel[] = [];//避免重复请求网络，把已经请求的艺术品存起来一个列表
   @Track isLoading: boolean = false;
   @Track errorMessage: string = '';
   @Track currentArtwork: OneArtworkViewModel | null = null;
@@ -39,8 +39,6 @@ export default class SwipeViewModel {
     this.canSwipePrevious = this.currentIndex > 0;
     this.canSwipeNext = this.currentIndex < this.artworkIDs.length - 1;
 
-    // 触发预加载下一张
-    this.preloadNextArtwork();
   }
 
 
@@ -99,6 +97,8 @@ export default class SwipeViewModel {
           }
         }
       }
+
+      this.preloadNextArtwork();
     } catch (error) {
       let msg = '';
       if (error instanceof Error) msg = error.message;
@@ -107,6 +107,7 @@ export default class SwipeViewModel {
     } finally {
       this.isLoading = false;
     }
+    this.timerTest()
   }
 
   /**
@@ -191,12 +192,12 @@ export default class SwipeViewModel {
             break;
           }
         }
+        this.preloadNextArtwork();
       } finally {
         this.isLoading = false;
       }
     }
 
-    this.timerTest()
   }
 
   // UI动画结束后调用：确认切换到上一张
@@ -218,6 +219,8 @@ export default class SwipeViewModel {
     this.currentIndex = -1;
     this.currentArtwork = null;
     this.nextArtwork = null;
+    this.currentArtwork = null;
+    this.prevArtwork = null;
     this.errorMessage = '';
     this.canSwipePrevious = false;
     this.canSwipeNext = false;

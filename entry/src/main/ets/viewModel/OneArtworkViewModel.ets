@@ -24,10 +24,10 @@ export class OneArtworkViewModel {
 
 @Observed
 export class Artwork {
-  objectID: number = 0;
-  title: string = '';
-  primaryImage: string = '';
-  primaryImageSmall: string = '';
+  @Track objectID: number = 0;
+  @Track title: string = '';
+  @Track primaryImage: string = '';
+  @Track primaryImageSmall: string = '';
 }
 
 
