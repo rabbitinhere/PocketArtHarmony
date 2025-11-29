@@ -59,7 +59,7 @@ export struct TabMainComponent {
             ForEach(this.todoListViewModel.things, (item: OneArtworkViewModel, index: number) => {
               ListItem() {
                 Row() {
-                  Image(item.artwork.primaryImageSmall || $r('app.media.startIcon'))
+                  Image(item.artwork.primaryImageSmall || $r('app.media.no_img'))
                     .width(80)
                     .height(80)
                     .margin({ left: 20, right: 20 })

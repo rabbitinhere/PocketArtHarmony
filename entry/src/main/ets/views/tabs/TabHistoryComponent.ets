@@ -162,7 +162,7 @@ export struct TabHistoryComponent {
         Row() {
           // 循环展示艺术品图片
           ForEach(params.item.artworkList, (artwork: TimelineArtwork) => {
-            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.startIcon')) // 使用真实 URL，为空则使用默认图
+            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.no_img')) // 使用真实 URL，为空则使用默认图
               .width(48)
               .height(48)
               .objectFit(ImageFit.Cover) // 确保图片适应大小

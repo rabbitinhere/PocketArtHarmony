@@ -88,7 +88,7 @@ export struct TabSwipeComponent {
         this.buildArtworkInfo()
       } else {
         // 无数据时的占位图
-        Image($r('app.media.startIcon'))
+        Image($r('app.media.no_img'))
           .width(120)
           .height(120)
           .objectFit(ImageFit.Contain)
