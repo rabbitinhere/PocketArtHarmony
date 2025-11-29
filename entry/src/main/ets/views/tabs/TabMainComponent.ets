@@ -17,12 +17,12 @@ export struct TabMainComponent {
           // 艺术品列表
           List() {
             ListItem() {
-              Text('Pocket Art')
+              Text('')
                 .fontSize(30)
                 .fontWeight(FontWeight.Bold)
                 .textAlign(TextAlign.Center)
                 .width('100%')
-                .margin({ top: 20, bottom: 20 })
+                .margin({ top: 5, bottom: 20 })
             }
             ListItem() {
 

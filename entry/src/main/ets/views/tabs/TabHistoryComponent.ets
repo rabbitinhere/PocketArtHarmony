@@ -23,13 +23,6 @@ export struct TabHistoryComponent {
   build() {
     Stack() {
       Column() {
-        // 标题
-        Text('Art Timeline')
-          .fontSize(30)
-          .fontWeight(FontWeight.Bold)
-          .textAlign(TextAlign.Center)
-          .width('100%')
-          .margin({ top: 20, bottom: 20 })
 
         // 时间轴列表
         List() {
