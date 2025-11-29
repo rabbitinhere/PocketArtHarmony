@@ -5,7 +5,10 @@ export class HttpHelper {
   private requestQueue: Array<() => void> = [];
   private isProcessing = false;
   private lastRequestTime = 0;
-  private readonly MIN_REQUEST_INTERVAL = 20; // 大都会网站说，不能大于1秒80次请求，我设置成1秒50次以内（20毫秒一次）
+
+  // 修正：将固定间隔改为随机范围，以模拟更自然的用户行为
+  private readonly MIN_DELAY = 20;
+  private readonly MAX_DELAY = 50;
 
   private constructor() {
   }
@@ -21,6 +24,7 @@ export class HttpHelper {
     return new Promise((resolve, reject) => {
       this.addToQueue(async () => {
         try {
+          console.info(`[HTTP START] URL: ${url}`);
           const response = await this.executeRequest(url, options);
 
           // 🌟 添加日志：检查响应状态码和结果
@@ -55,10 +59,21 @@ export class HttpHelper {
     this.isProcessing = true;
 
     while (this.requestQueue.length > 0) {
+
+      // 🌟 核心修正：计算 20ms 到 50ms 之间的随机间隔
+      // 生成 [MIN_DELAY, MAX_DELAY] 范围内的随机整数
+      const randomInterval = Math.floor(
+        Math.random() * (this.MAX_DELAY - this.MIN_DELAY + 1)
+      ) + this.MIN_DELAY;
+
       // 计算需要等待的时间
       const now = Date.now();
       const timeSinceLastRequest = now - this.lastRequestTime;
-      const waitTime = Math.max(0, this.MIN_REQUEST_INTERVAL - timeSinceLastRequest);
+
+      // 使用随机生成的间隔来计算等待时间
+      const waitTime = Math.max(0, randomInterval - timeSinceLastRequest);
+
+      console.info(`[HttpHelper] Required Interval: ${randomInterval}ms, Actual Wait Time: ${waitTime}ms`);
 
       if (waitTime > 0) {
         await this.delay(waitTime);
