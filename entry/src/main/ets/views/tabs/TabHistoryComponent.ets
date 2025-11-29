@@ -1,32 +1,22 @@
-import TabHistoryViewModel from "../../viewModel/TabHistoryViewModel";
+import TabHistoryViewModel, { YearTimelineItem, TimelineArtwork } from "../../viewModel/TabHistoryViewModel";
 import { OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
+// 导入 promptAction 用于 Toast
+import { promptAction } from '@kit.ArkUI';
 
+// 更新接口，使用新的数据结构
 interface TimelineItemParams {
-  year: number;
+  item: YearTimelineItem;
   isFirst: boolean;
   isLast: boolean;
 }
 
 @Component
 export struct TabHistoryComponent {
-  // 绑定新的 TabHistoryViewModel
   @Link tabHistoryViewModel: TabHistoryViewModel;
 
-  // 移除本地的 yearList 和 generateYearList 方法
-
-  // 生成测试图片数据（5张小图片）
-  private generateSampleImages(): string[] {
-    return [
-      'sample_image_1',
-      'sample_image_2',
-      'sample_image_3',
-      'sample_image_4',
-      'sample_image_5'
-    ];
-  }
+  // 移除 generateSampleImages 方法，因为现在数据来自 ViewModel
 
   aboutToAppear() {
-    // 组件出现时，初始化加载年份数据
     this.tabHistoryViewModel.initLoadYears();
   }
 
@@ -43,18 +33,18 @@ export struct TabHistoryComponent {
 
         // 时间轴列表
         List() {
-          // 使用 ViewModel 中的 yearList
-          ForEach(this.tabHistoryViewModel.yearList, (year: number, index: number) => {
+          ForEach(this.tabHistoryViewModel.yearList, (item: YearTimelineItem, index: number) => {
             ListItem() {
+              // 传递整个 item 对象
               this.YearTimelineItem({
-                year: year,
+                item: item,
                 isFirst: index === 0,
                 isLast: index === this.tabHistoryViewModel.yearList.length - 1
               } as TimelineItemParams)
             }
           })
 
-          // 加载更多提示项 (参考 TabMainComponent)
+          // 加载更多提示项 (保持不变)
           ListItem() {
             Row()
             {
@@ -72,15 +62,13 @@ export struct TabHistoryComponent {
             .width('100%')
             .height(60)
             .justifyContent(FlexAlign.Center)
-            // 只有当 hasMoreData 为 true 时才显示提示
             .visibility(this.tabHistoryViewModel.hasMoreData ? Visibility.Visible : Visibility.None)
           }
 
         }
         .width('100%')
-        .layoutWeight(1) // 占据剩余空间
+        .layoutWeight(1)
         .scrollBar(BarState.Off)
-        // 绑定滑动到底部事件
         .onReachEnd(() => {
           if (!this.tabHistoryViewModel.isLoadingMore && this.tabHistoryViewModel.hasMoreData) {
             console.info("history_reach_end_load")
@@ -91,9 +79,8 @@ export struct TabHistoryComponent {
       .width('100%')
       .height('100%')
 
-      // 添加 Loading 弹框层（参考 TabMainComponent）
+      // Loading 弹框层 (保持不变)
       if (this.tabHistoryViewModel.isInitLoading) {
-        // 半透明背景 + 居中圆形加载指示器
         Stack() {
           Rect()
             .width('100%')
@@ -118,25 +105,22 @@ export struct TabHistoryComponent {
     }
   }
 
-  // 时间轴项组件 (保持不变)
+  // 时间轴项组件 (重点改造)
   @Builder
-  YearTimelineItem(item: TimelineItemParams) {
+  YearTimelineItem(params: TimelineItemParams) {
+
     Row() {
-      // 左侧时间轴区域
+      // 左侧时间轴区域 (保持不变)
       Column() {
-        // 时间轴竖线容器 - 使用绝对定位确保连线连续
         Column() {
-          // 完整的竖线背景（贯穿整个区域）
           Column()
             .width(2)
             .height('100%')
-            .backgroundColor('#E5E5E5') // 浅灰色背景线
+            .backgroundColor('#E5E5E5')
             .alignSelf(ItemAlign.Center)
             .position({ x: 0, y: 0 })
 
-          // 高亮的活动线段（根据位置调整）
           Column() {
-            // 中间项：显示完整竖线
             Column()
               .width(2)
               .height('100%')
@@ -147,7 +131,6 @@ export struct TabHistoryComponent {
           .height('100%')
           .alignSelf(ItemAlign.Center)
 
-          // 年份圆点（在最上层）
           Circle()
             .width(20)
             .height(20)
@@ -166,7 +149,7 @@ export struct TabHistoryComponent {
       .alignItems(HorizontalAlign.Center)
 
       // 年份文本
-      Text(item.year >= 0 ? `${item.year}年` : `${Math.abs(item.year)}年 BCE`)
+      Text(params.item.year >= 0 ? `${params.item.year}年` : `${Math.abs(params.item.year)}年 BCE`)
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
         .fontColor('#333333')
@@ -175,26 +158,46 @@ export struct TabHistoryComponent {
 
       // 右侧图片区域
       Column() {
-        // 5张图片水平排列
+        // 4 张图片水平排列，来自 ViewModel 的真实数据
         Row() {
-          ForEach(this.generateSampleImages(), (image: string, imgIndex: number) => {
-            Image($r('app.media.startIcon')) // 使用默认图片
+          // 循环展示艺术品图片
+          ForEach(params.item.artworkList, (artwork: TimelineArtwork) => {
+            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.startIcon')) // 使用真实 URL，为空则使用默认图
               .width(48)
               .height(48)
+              .objectFit(ImageFit.Cover) // 确保图片适应大小
               .backgroundColor('#F0F0F0')
               .borderRadius(4)
               .margin({ right: 5 })
+              .onClick(() => {
+                // 添加点击事件，Toast 提示显示艺术品名字 (title)
+                promptAction.showToast({
+                  message: artwork.title,
+                  duration: 2000
+                })
+              })
           })
+
+          // 如果艺术品数量不足4个，留空占位 (可选，这里不占位，让图片自然排列)
         }
         .width('100%')
         .justifyContent(FlexAlign.Start)
 
         // 年份描述文本
-        Text(`公元${item.year >= 0 ? item.year : Math.abs(item.year)}年${item.year >= 0 ? '' : '前'}的代表性艺术作品`)
+        Text(`公元${params.item.year >= 0 ? params.item.year : Math.abs(params.item.year)}年${params.item.year >= 0 ? '' : '前'}的代表性艺术作品`)
           .fontSize(12)
           .fontColor('#666666')
           .margin({ top: 8 })
           .width('100%')
+
+        // 提示：如果没有图片，额外显示一个文本提示
+        if (params.item.artworkList.length === 0) {
+          Text('该时间段暂无艺术品数据')
+            .fontSize(12)
+            .fontColor('#999999')
+            .margin({ top: 5 })
+            .width('100%')
+        }
       }
       .layoutWeight(1)
       .margin({ left: 10, right: 10 })
