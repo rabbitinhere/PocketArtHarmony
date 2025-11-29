@@ -19,9 +19,9 @@ struct MainPage {
 
 
   private tabConfigs: TabConfig[] = [
-    { index: 0, name: '页面1' },
-    { index: 1, name: '页面2' },
-    { index: 2, name: '页面3' }
+    { index: 0, name: 'Search' },
+    { index: 1, name: 'Swipe' },
+    { index: 2, name: 'History' }
   ];
   async aboutToAppear() {
     // await this.todoListViewModel.loadTasks(this.context);
