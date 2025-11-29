@@ -9,19 +9,10 @@ interface TimelineItemParams {
 
 @Component
 export struct TabHistoryComponent {
+  // 绑定新的 TabHistoryViewModel
   @Link tabHistoryViewModel: TabHistoryViewModel;
 
-  // 测试数据：从2000年到-2000年，每100年一个间隔
-  private yearList: number[] = this.generateYearList();
-
-  // 生成年份列表：2000, 1900, 1800, ... , -2000
-  private generateYearList(): number[] {
-    const years: number[] = [];
-    for (let year = 2000; year >= -2000; year -= 100) {
-      years.push(year);
-    }
-    return years;
-  }
+  // 移除本地的 yearList 和 generateYearList 方法
 
   // 生成测试图片数据（5张小图片）
   private generateSampleImages(): string[] {
@@ -35,6 +26,8 @@ export struct TabHistoryComponent {
   }
 
   aboutToAppear() {
+    // 组件出现时，初始化加载年份数据
+    this.tabHistoryViewModel.initLoadYears();
   }
 
   build() {
@@ -50,26 +43,82 @@ export struct TabHistoryComponent {
 
         // 时间轴列表
         List() {
-          ForEach(this.yearList, (year: number, index: number) => {
+          // 使用 ViewModel 中的 yearList
+          ForEach(this.tabHistoryViewModel.yearList, (year: number, index: number) => {
             ListItem() {
               this.YearTimelineItem({
                 year: year,
                 isFirst: index === 0,
-                isLast: index === this.yearList.length - 1
+                isLast: index === this.tabHistoryViewModel.yearList.length - 1
               } as TimelineItemParams)
             }
           })
+
+          // 加载更多提示项 (参考 TabMainComponent)
+          ListItem() {
+            Row()
+            {
+              if (this.tabHistoryViewModel.isLoadingMore) {
+                LoadingProgress()
+                  .width(30)
+                  .height(30)
+                Text('加载中...')
+                  .margin({ left: 8 })
+              } else {
+                Text('上拉加载更多')
+                  .fontColor('#666')
+              }
+            }
+            .width('100%')
+            .height(60)
+            .justifyContent(FlexAlign.Center)
+            // 只有当 hasMoreData 为 true 时才显示提示
+            .visibility(this.tabHistoryViewModel.hasMoreData ? Visibility.Visible : Visibility.None)
+          }
+
         }
         .width('100%')
         .layoutWeight(1) // 占据剩余空间
         .scrollBar(BarState.Off)
+        // 绑定滑动到底部事件
+        .onReachEnd(() => {
+          if (!this.tabHistoryViewModel.isLoadingMore && this.tabHistoryViewModel.hasMoreData) {
+            console.info("history_reach_end_load")
+            this.tabHistoryViewModel.loadNextPage(false);
+          }
+        })
       }
       .width('100%')
       .height('100%')
+
+      // 添加 Loading 弹框层（参考 TabMainComponent）
+      if (this.tabHistoryViewModel.isInitLoading) {
+        // 半透明背景 + 居中圆形加载指示器
+        Stack() {
+          Rect()
+            .width('100%')
+            .height('100%')
+            .backgroundColor(Color.Black)
+            .opacity(0.3)
+
+          Column() {
+            LoadingProgress()
+              .color('#ffffff')
+              .width(60)
+              .height(60)
+            Text('加载中...')
+              .fontSize(18)
+              .fontColor('#ffffff')
+              .margin({ top: 12 })
+          }
+          .justifyContent(FlexAlign.Center)
+          .alignItems(HorizontalAlign.Center)
+        }
+      }
     }
   }
 
-  // 时间轴项组件 - 修正时间轴连线问题
+  // 时间轴项组件 (保持不变)
   @Builder
   YearTimelineItem(item: TimelineItemParams) {
     Row() {
@@ -87,12 +136,12 @@ export struct TabHistoryComponent {
 
           // 高亮的活动线段（根据位置调整）
           Column() {
-              // 中间项：显示完整竖线
-              Column()
-                .width(2)
-                .height('100%')
-                .backgroundColor('#007DFF')
-                .alignSelf(ItemAlign.Center)
+            // 中间项：显示完整竖线
+            Column()
+              .width(2)
+              .height('100%')
+              .backgroundColor('#007DFF')
+              .alignSelf(ItemAlign.Center)
           }
           .width(2)
           .height('100%')
