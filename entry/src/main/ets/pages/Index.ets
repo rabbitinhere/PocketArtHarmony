@@ -40,7 +40,8 @@ struct MainPage {
         TabHistoryComponent({ tabHistoryViewModel: this.tabHistoryViewModel }).visibility(this.currentPage === 2 ? Visibility.Visible : Visibility.None)
 
       }
-      .height('90%')
+      .width('100%')
+      .layoutWeight(1)
 
       // 使用封装的底部导航栏
       this.TabBar()

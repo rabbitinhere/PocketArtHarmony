@@ -21,7 +21,19 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+    let windowClass: window.Window | null = null;
+    windowStage.getMainWindow((err, data) => {
+      // 1.获取应用主窗口
+      windowClass = data;
+      // // 2.设置导航栏、状态栏不显示。
+      // windowClass.setWindowSystemBarEnable([], (err) => {
+      //
+      // });
+      // 3.设置全屏
+      windowClass.setWindowLayoutFullScreen(true).then(() => {
 
+      })
+    })
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
         hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
