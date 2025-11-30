@@ -117,7 +117,7 @@ export struct TabSwipeComponent {
         // 1. 上一张（Offset: -Height）
         if (this.swipeViewModel.prevArtwork) {
           Stack() {
-            this.buildSingleArtwork(this.swipeViewModel.prevArtwork.artwork)
+            buildSingleArtwork({artwork : this.swipeViewModel.prevArtwork.artwork})
           }
           .width('100%')
           .height('100%')
@@ -126,7 +126,7 @@ export struct TabSwipeComponent {
 
         // 2. 当前张（Offset: 0）
         if (this.swipeViewModel.currentArtwork) {
-          this.buildSingleArtwork(this.swipeViewModel.currentArtwork.artwork)
+          buildSingleArtwork({artwork : this.swipeViewModel.currentArtwork.artwork})
         } else {
           // 占位
           Stack()
@@ -138,7 +138,7 @@ export struct TabSwipeComponent {
         // 3. 下一张（Offset: +Height）
         if (this.swipeViewModel.nextArtwork && this.swipeViewModel.nextArtwork.artwork.primaryImageSmall) { // 确保下一张有图片才渲染
           Stack() {
-            this.buildSingleArtwork(this.swipeViewModel.nextArtwork.artwork)
+            buildSingleArtwork({artwork : this.swipeViewModel.nextArtwork.artwork})
           }
           .width('100%')
           .height('100%')
