@@ -7,8 +7,7 @@ export struct TabSwipeComponent {
 
   // 手势与动画状态
   @State private startY: number = 0;
-  @State private currentOffsetY: number = 0; // 手指拖动的实时偏移
-  @State private animatedOffset: number = 0; // 动画的目标偏移
+  @State private currentOffsetY: number = 0; // ⭐️ 统一使用这个变量控制偏移
   @State private isSwiping: boolean = false;
   @State private containerHeight: number = 0; // 容器高度
 
@@ -21,10 +20,7 @@ export struct TabSwipeComponent {
     if (this.swipeViewModel.isLoading) return;
     this.startY = event.touches[0].y;
     this.isSwiping = true;
-
-    // 停止之前的动画，从当前位置开始
-    this.currentOffsetY = this.animatedOffset;
-    this.animatedOffset = this.currentOffsetY;
+    // ⭐️ 移除之前的 offset 同步逻辑，因为现在只有一个变量
   }
 
   // 触摸移动（跟手逻辑）
@@ -34,13 +30,14 @@ export struct TabSwipeComponent {
     const currentY = event.touches[0].y;
     let deltaY = currentY - this.startY;
 
-    // 边界阻尼：【修复点 4】：直接使用 @Track 属性
+    // 边界阻尼
     if (deltaY > 0 && !this.swipeViewModel.canSwipePrevious) {
       deltaY = deltaY * 0.3; // 阻尼效果
     } else if (deltaY < 0 && !this.swipeViewModel.canSwipeNext) {
       deltaY = deltaY * 0.3;
     }
 
+    // ⭐️ 直接更新 currentOffsetY，视图会实时跟随
     this.currentOffsetY = deltaY;
   }
 
@@ -54,7 +51,6 @@ export struct TabSwipeComponent {
     let willChangeIndex = false;
 
     // 判断意图
-    // 【修复点 5】：直接使用 @Track 属性
     if (this.currentOffsetY < -threshold && this.swipeViewModel.canSwipeNext) {
       // 上滑 -> 下一张
       targetOffset = -this.containerHeight;
@@ -64,29 +60,31 @@ export struct TabSwipeComponent {
       targetOffset = this.containerHeight;
       willChangeIndex = true;
     } else {
-      // 回弹
+      // 回弹：目标是回到 0
       targetOffset = 0;
       willChangeIndex = false;
     }
 
-    // 执行动画
+    // ⭐️ 执行动画：currentOffsetY 从当前位置平滑过渡到 targetOffset
     animateTo({
       duration: 300,
       curve: Curve.FastOutSlowIn,
       onFinish: () => {
         if (willChangeIndex) {
+          // 只有切换了卡片，才通知 ViewModel 更新数据
           if (targetOffset < 0) {
             this.swipeViewModel.confirmSwipeToNext();
           } else {
             this.swipeViewModel.confirmSwipeToPrevious();
           }
+          // 数据更新后，瞬间将偏移量重置为 0（新卡片归位）
+          this.currentOffsetY = 0;
         }
-        // 关键：数据切换后，瞬间重置偏移量到0
-        this.currentOffsetY = 0;
-        this.animatedOffset = 0;
+        // 如果是回弹（willChangeIndex === false），offset 已经动画到了 0，无需额外重置
       }
     }, () => {
-      this.animatedOffset = targetOffset;
+      // ⭐️ 在动画闭包中设置目标值
+      this.currentOffsetY = targetOffset;
     })
   }
 
@@ -98,7 +96,6 @@ export struct TabSwipeComponent {
       // 辅助层
       this.buildLoadingIndicator()
       this.buildErrorTip()
-      this.buildSwipeHint()
     }
     .width('100%')
     .height('100%')
@@ -136,7 +133,7 @@ export struct TabSwipeComponent {
         }
 
         // 3. 下一张（Offset: +Height）
-        if (this.swipeViewModel.nextArtwork && this.swipeViewModel.nextArtwork.artwork.primaryImageSmall) { // 确保下一张有图片才渲染
+        if (this.swipeViewModel.nextArtwork && this.swipeViewModel.nextArtwork.artwork.primaryImageSmall) {
           Stack() {
             buildSingleArtwork({artwork : this.swipeViewModel.nextArtwork.artwork})
           }
@@ -154,8 +151,8 @@ export struct TabSwipeComponent {
       }
       .width('100%')
       .height('100%')
-      // 整个容器跟随手指偏移（动画或手势）
-      .offset({ y: this.animatedOffset !== 0 ? this.animatedOffset : this.currentOffsetY })
+      // ⭐️ 修复点：只使用 currentOffsetY 一个变量控制偏移
+      .offset({ y: this.currentOffsetY })
     }
     .width('100%')
     .height('100%')
@@ -189,25 +186,14 @@ export struct TabSwipeComponent {
     }
   }
 
-  @Builder
-  buildSwipeHint() {
-    if (!this.swipeViewModel.isLoading && !this.swipeViewModel.errorMessage && this.swipeViewModel.currentArtwork) {
-      Column() {
-        Text('上滑查看更多').fontSize(12).fontColor(Color.White).opacity(0.6)
-      }.width('100%').margin({ top: 60 }).alignItems(HorizontalAlign.Center).onClick(() => {
-        this.swipeViewModel.confirmSwipeToNext()
-      })
-    }
-  }
 }
 
-// 封装单个艺术品视图  注意如果用@Builder函数就无法更新UI了
+// 封装单个艺术品视图
 @Component
 struct buildSingleArtwork {
   @Prop artwork: Artwork
   build(){
     Stack({ alignContent: Alignment.BottomStart }) {
-      // 【修复点 6】：检查 primaryImageSmall，确保 Image 路径有效，否则使用纯色背景
       if (this.artwork.primaryImageSmall) {
         Image(this.artwork.primaryImageSmall)
           .width('100%')
@@ -216,11 +202,9 @@ struct buildSingleArtwork {
           .interpolation(ImageInterpolation.High)
           .renderMode(ImageRenderMode.Original)
       } else {
-        // 没有图片路径，显示黑色占位
         Stack().width('100%').height('100%').backgroundColor(Color.Black)
       }
 
-      // 信息遮罩
       Column({ space: 8 }) {
         Text(this.artwork.title || '未知标题')
           .fontSize(20).fontColor(Color.White).fontWeight(FontWeight.Bold)
