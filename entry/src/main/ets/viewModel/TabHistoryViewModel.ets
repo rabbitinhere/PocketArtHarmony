@@ -1,19 +1,13 @@
 import { http } from '@kit.NetworkKit';
 // 假设 HttpHelper 和 OneArtworkViewModel 已经被正确导入
 import { HttpHelper } from "../http/NetworkService";
-import { OneArtworkViewModel } from "./OneArtworkViewModel"; // 保留导入，尽管这里不直接使用 OneArtworkViewModel
+import { Artwork, OneArtworkViewModel } from "./OneArtworkViewModel"; // 保留导入，尽管这里不直接使用 OneArtworkViewModel
 
-// 定义单个艺术品的数据结构，用于组件显示
-export interface TimelineArtwork {
-  objectID: number;
-  imageUrl: string; // primaryImageSmall
-  title: string;
-}
 
 // 定义时间轴列表项的数据结构
 export interface YearTimelineItem {
   year: number; // 当前年份（作为范围的 dateEnd）
-  artworkList: TimelineArtwork[]; // 艺术品列表
+  artworkList: Artwork[]; // 艺术品列表
 }
 
 @Observed
@@ -74,8 +68,8 @@ export default class TabHistoryViewModel {
   }
 
   // 获取单个年份范围的艺术品数据
-  private async fetchArtworksForYearRange(dateBegin: number, dateEnd: number): Promise<TimelineArtwork[]> {
-    const artworks: TimelineArtwork[] = [];
+  private async fetchArtworksForYearRange(dateBegin: number, dateEnd: number): Promise<Artwork[]> {
+    const artworks: Artwork[] = [];
     const SEARCH_API = `https://collectionapi.metmuseum.org/public/collection/v1/search?q=&dateBegin=${dateBegin}&dateEnd=${dateEnd}`;
     const DETAIL_BASE_API = `https://collectionapi.metmuseum.org/public/collection/v1/objects/`;
 
@@ -105,14 +99,9 @@ export default class TabHistoryViewModel {
       // 3. 解析详情结果
       detailResults.forEach(resp => {
         try {
-          const detailData = JSON.parse(resp.result as string) as ArtworkDetailResp;
+          const detailData = JSON.parse(resp.result as string) as Artwork;
 
-          artworks.push({
-            objectID: detailData.objectID,
-            // primaryImageSmall 字段可能为空，组件中将使用默认图
-            imageUrl: detailData.primaryImageSmall || '',
-            title: detailData.title || '未知艺术品'
-          });
+          artworks.push(detailData);
         } catch (e) {
           console.error('解析艺术品详情失败:', e);
         }

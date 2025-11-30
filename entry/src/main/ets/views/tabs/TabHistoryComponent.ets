@@ -1,5 +1,5 @@
-import TabHistoryViewModel, { YearTimelineItem, TimelineArtwork } from "../../viewModel/TabHistoryViewModel";
-import { OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
+import TabHistoryViewModel, { YearTimelineItem } from "../../viewModel/TabHistoryViewModel";
+import { Artwork, OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
 import { promptAction } from '@kit.ArkUI';
 
 interface TimelineItemParams {
@@ -155,8 +155,8 @@ export struct TabHistoryComponent {
         // 第一行图片 (2x2 grid)
         Row() {
           // 只显示前两张图片 - 直接使用 params.item.artworkList
-          ForEach(params.item.artworkList.slice(0, 2), (artwork: TimelineArtwork) => {
-            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.no_img'))
+          ForEach(params.item.artworkList.slice(0, 2), (artwork: Artwork) => {
+            Image(artwork.primaryImageSmall ? artwork.primaryImageSmall : $r('app.media.no_img'))
               .width(this.IMAGE_SIZE)
               .height(this.IMAGE_SIZE)
               .objectFit(ImageFit.Cover)
@@ -178,8 +178,8 @@ export struct TabHistoryComponent {
         // 第二行图片
         Row() {
           // 显示第三、第四张图片 - 直接使用 params.item.artworkList
-          ForEach(params.item.artworkList.slice(2, 4), (artwork: TimelineArtwork) => {
-            Image(artwork.imageUrl ? artwork.imageUrl : $r('app.media.no_img'))
+          ForEach(params.item.artworkList.slice(2, 4), (artwork: Artwork) => {
+            Image(artwork.primaryImageSmall ? artwork.primaryImageSmall : $r('app.media.no_img'))
               .width(this.IMAGE_SIZE)
               .height(this.IMAGE_SIZE)
               .objectFit(ImageFit.Cover)
