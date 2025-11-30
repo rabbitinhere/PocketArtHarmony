@@ -1,6 +1,7 @@
 import TabHistoryViewModel, { YearTimelineItem } from "../../viewModel/TabHistoryViewModel";
 import { Artwork, OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
 import { promptAction } from '@kit.ArkUI';
+import router from '@ohos.router'; // 导入 router 模块
 
 interface TimelineItemParams {
   item: YearTimelineItem;
@@ -164,10 +165,7 @@ export struct TabHistoryComponent {
               .borderRadius(4)
               .margin({ right: this.IMAGE_MARGIN })
               .onClick(() => {
-                promptAction.showToast({
-                  message: artwork.title,
-                  duration: 2000
-                })
+                this.gotoDetail(artwork);
               })
           })
         }
@@ -187,10 +185,7 @@ export struct TabHistoryComponent {
               .borderRadius(4)
               .margin({ right: this.IMAGE_MARGIN })
               .onClick(() => {
-                promptAction.showToast({
-                  message: artwork.title,
-                  duration: 2000
-                })
+                this.gotoDetail(artwork);
               })
           })
         }
@@ -218,5 +213,21 @@ export struct TabHistoryComponent {
     .height(180)
     .padding({ top: 10, bottom: 10 })
     .margin({ left: 20, right: 20 })
+  }
+
+  gotoDetail(artwork: Artwork) {
+    router.pushUrl({
+      url: 'pages/ArtworkDetailComponent', // 新增的详情页路径
+      params: {
+        // 传入完整的艺术品详情对象
+        artwork: artwork as Artwork
+      }
+    })
+      .then(() => {
+        console.info(`Mapsd to detail for objectID: ${artwork.objectID}`);
+      })
+      .catch((err: Error) => {
+        console.error(`Navigation failed: ${err.message}`);
+      });
   }
 }

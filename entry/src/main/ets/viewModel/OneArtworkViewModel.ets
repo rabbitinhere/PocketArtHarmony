@@ -28,6 +28,12 @@ export class Artwork {
   @Track title: string = '';
   @Track primaryImage: string = '';
   @Track primaryImageSmall: string = '';
+  @Track artistDisplayName: string = ''; // 艺术家
+  @Track objectDate: string = ''; // 创作日期
+  @Track medium: string = ''; // 媒介/材料
+  @Track dimensions: string = ''; // 尺寸
+  @Track culture: string = ''; // 文化
+  @Track department: string = ''; // 部门
 }
 
 

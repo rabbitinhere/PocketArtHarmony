@@ -1,5 +1,7 @@
 import TabMainViewModel from "../../viewModel/TabMainViewModel";
-import { OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
+import { Artwork, OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
+import router from '@ohos.router'; // 导入 router 模块
+
 
 @Component
 export struct TabMainComponent {
@@ -77,6 +79,9 @@ export struct TabMainComponent {
                 .shadow({ radius: 8, color: '#1A000000', offsetX: 2, offsetY: 4 })
               }
               .margin({ top: 8, bottom: 8 })
+              .onClick(() => {
+                this.gotoDetail(item.artwork);
+              })
             })
 
             // 加载更多提示项
@@ -133,5 +138,21 @@ export struct TabMainComponent {
         }
       }
     }
+  }
+
+  gotoDetail(artwork: Artwork) {
+    router.pushUrl({
+      url: 'pages/ArtworkDetailComponent', // 新增的详情页路径
+      params: {
+        // 传入完整的艺术品详情对象
+        artwork: artwork as Artwork
+      }
+    })
+      .then(() => {
+        console.info(`Mapsd to detail for objectID: ${artwork.objectID}`);
+      })
+      .catch((err: Error) => {
+        console.error(`Navigation failed: ${err.message}`);
+      });
   }
 }
