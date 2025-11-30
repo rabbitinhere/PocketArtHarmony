@@ -115,27 +115,9 @@ export struct TabSwipeComponent {
       // 核心布局：Stack 包含三张图
       Stack({ alignContent: Alignment.TopStart }) {
         // 1. 上一张（Offset: -Height）
-        if (this.swipeViewModel.preArtBean) {
+        if (this.swipeViewModel.prevArtwork) {
           Stack() {
-            Stack({ alignContent: Alignment.BottomStart }) {
-              // 【修复点 6】：检查 primaryImageSmall，确保 Image 路径有效，否则使用纯色背景
-              if (this.swipeViewModel.preArtBean.primaryImageSmall) {
-                Image(this.swipeViewModel.preArtBean.primaryImageSmall)
-                  .width('100%')
-                  .height('100%')
-                  .objectFit(ImageFit.Cover)
-                  .interpolation(ImageInterpolation.High)
-                  .renderMode(ImageRenderMode.Original)
-              } else {
-                // 没有图片路径，显示黑色占位
-                Stack().width('100%').height('100%').backgroundColor(Color.Black)
-              }
-
-              // 信息遮罩
-              this.buildArtworkInfo(this.swipeViewModel.preArtBean)
-            }
-            .width('100%')
-            .height('100%')
+            this.buildSingleArtwork(this.swipeViewModel.prevArtwork.artwork)
           }
           .width('100%')
           .height('100%')
@@ -143,26 +125,8 @@ export struct TabSwipeComponent {
         }
 
         // 2. 当前张（Offset: 0）
-        if (this.swipeViewModel.curArtBean) {
-          Stack({ alignContent: Alignment.BottomStart }) {
-            // 【修复点 6】：检查 primaryImageSmall，确保 Image 路径有效，否则使用纯色背景
-            if (this.swipeViewModel.curArtBean.primaryImageSmall) {
-              Image(this.swipeViewModel.curArtBean.primaryImageSmall)
-                .width('100%')
-                .height('100%')
-                .objectFit(ImageFit.Cover)
-                .interpolation(ImageInterpolation.High)
-                .renderMode(ImageRenderMode.Original)
-            } else {
-              // 没有图片路径，显示黑色占位
-              Stack().width('100%').height('100%').backgroundColor(Color.Black)
-            }
-
-            // 信息遮罩
-            this.buildArtworkInfo(this.swipeViewModel.curArtBean)
-          }
-          .width('100%')
-          .height('100%')
+        if (this.swipeViewModel.currentArtwork) {
+          this.buildSingleArtwork(this.swipeViewModel.currentArtwork.artwork)
         } else {
           // 占位
           Stack()
@@ -172,27 +136,9 @@ export struct TabSwipeComponent {
         }
 
         // 3. 下一张（Offset: +Height）
-        if (this.swipeViewModel.nextArtBean && this.swipeViewModel.nextArtBean.primaryImageSmall) { // 确保下一张有图片才渲染
+        if (this.swipeViewModel.nextArtwork && this.swipeViewModel.nextArtwork.artwork.primaryImageSmall) { // 确保下一张有图片才渲染
           Stack() {
-            Stack({ alignContent: Alignment.BottomStart }) {
-              // 【修复点 6】：检查 primaryImageSmall，确保 Image 路径有效，否则使用纯色背景
-              if (this.swipeViewModel.nextArtBean.primaryImageSmall) {
-                Image(this.swipeViewModel.nextArtBean.primaryImageSmall)
-                  .width('100%')
-                  .height('100%')
-                  .objectFit(ImageFit.Cover)
-                  .interpolation(ImageInterpolation.High)
-                  .renderMode(ImageRenderMode.Original)
-              } else {
-                // 没有图片路径，显示黑色占位
-                Stack().width('100%').height('100%').backgroundColor(Color.Black)
-              }
-
-              // 信息遮罩
-              this.buildArtworkInfo(this.swipeViewModel.nextArtBean)
-            }
-            .width('100%')
-            .height('100%')
+            this.buildSingleArtwork(this.swipeViewModel.nextArtwork.artwork)
           }
           .width('100%')
           .height('100%')
@@ -268,7 +214,7 @@ export struct TabSwipeComponent {
 
   @Builder
   buildLoadingIndicator() {
-    if (this.swipeViewModel.isLoading && !this.swipeViewModel.nextArtBean) {
+    if (this.swipeViewModel.isLoading && !this.swipeViewModel.currentArtwork) {
       Column() {
         LoadingProgress().width(40).height(40).color(Color.White)
         Text('加载中...').fontSize(16).fontColor(Color.White).margin({ top: 12 })
@@ -291,11 +237,11 @@ export struct TabSwipeComponent {
 
   @Builder
   buildSwipeHint() {
-    if (!this.swipeViewModel.isLoading && !this.swipeViewModel.errorMessage && this.swipeViewModel.nextArtBean) {
+    if (!this.swipeViewModel.isLoading && !this.swipeViewModel.errorMessage && this.swipeViewModel.currentArtwork) {
       Column() {
-        Text(this.swipeViewModel.testNext).fontSize(12).fontColor(Color.White).opacity(0.6)
+        Text('上滑查看更多').fontSize(12).fontColor(Color.White).opacity(0.6)
       }.width('100%').margin({ top: 60 }).alignItems(HorizontalAlign.Center).onClick(() => {
-        this.swipeViewModel.doTestNext()
+        this.swipeViewModel.confirmSwipeToNext()
       })
     }
   }

@@ -1,4 +1,4 @@
-import { Artwork, OneArtworkViewModel } from "./OneArtworkViewModel";
+import { OneArtworkViewModel } from "./OneArtworkViewModel";
 import { http } from '@kit.NetworkKit';
 import { HttpHelper } from "../http/NetworkService";
 // 假设您有一个 ArtworkListResp 类型，这里保持原样
@@ -16,10 +16,9 @@ export default class SwipeViewModel {
   @Track artworks: OneArtworkViewModel[] = [];//避免重复请求网络，把已经请求的艺术品存起来一个列表
   @Track isLoading: boolean = false;
   @Track errorMessage: string = '';
-  @Track testNext: string = '上滑查看更多';
-  @Track curArtBean: Artwork | null = null;
-  @Track preArtBean: Artwork | null = null;
-  @Track nextArtBean: Artwork | null = null;
+  @Track currentArtwork: OneArtworkViewModel | null = null;
+  @Track nextArtwork: OneArtworkViewModel | null = null; // 下一张的引用
+  @Track prevArtwork: OneArtworkViewModel | null = null; // 上一张的引用
 
   @Track artworkIDs: number[] = [];
 
@@ -29,9 +28,12 @@ export default class SwipeViewModel {
 
   // 统一更新当前、上一张、下一张的引用和状态
   private updateArtworks() {
-    this.curArtBean = (this.artworks[this.currentIndex] || null)?.artwork;
-    this.preArtBean = (this.artworks[this.currentIndex - 1] || null)?.artwork;
-    this.nextArtBean = (this.artworks[this.currentIndex + 1] || null)?.artwork;
+    this.currentArtwork = this.artworks[this.currentIndex] || null;
+    this.prevArtwork = this.artworks[this.currentIndex - 1] || null;
+
+    // 尝试获取下一张，如果不存在则触发预加载
+    const nextIndex = this.currentIndex + 1;
+    this.nextArtwork = this.artworks[nextIndex] || null;
 
     // 【修复点 2】：在这里计算并更新 @Track 属性
     this.canSwipePrevious = this.currentIndex > 0;
@@ -42,6 +44,7 @@ export default class SwipeViewModel {
 
   private async timerTest() {
     setInterval(() => {
+      console.info("ra_todo confirmSwipeToNext  prevArtwork = " + this.prevArtwork?.artwork.primaryImageSmall + "   currentArtwork = " + this.currentArtwork?.artwork.primaryImageSmall + "   nextArtwork = " + this.nextArtwork?.artwork.primaryImageSmall)
     }, 1000);
   }
 
@@ -79,9 +82,9 @@ export default class SwipeViewModel {
     try {
       this.artworks = [];
       this.currentIndex = -1;
-      this.curArtBean = null;
-      this.preArtBean = null;
-      this.nextArtBean = null;
+      this.currentArtwork = null;
+      this.nextArtwork = null;
+
       this.artworkIDs = await this.fetchRandomArtworkIDs();
 
       // 【修复点 3】：循环查找第一个有图的ID作为初始图
@@ -173,10 +176,6 @@ export default class SwipeViewModel {
       });
   }
 
-
-  doTestNext(){
-    this.testNext = "dfdfdf"
-  }
   // UI动画结束后调用：确认切换到下一张
   async confirmSwipeToNext(): Promise<void> {
     const nextIndex = this.currentIndex + 1;
@@ -218,9 +217,10 @@ export default class SwipeViewModel {
   reset(): void {
     this.artworks = [];
     this.currentIndex = -1;
-    this.curArtBean = null;
-    this.preArtBean = null;
-    this.nextArtBean = null;
+    this.currentArtwork = null;
+    this.nextArtwork = null;
+    this.currentArtwork = null;
+    this.prevArtwork = null;
     this.errorMessage = '';
     this.canSwipePrevious = false;
     this.canSwipeNext = false;
