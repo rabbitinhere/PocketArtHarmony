@@ -59,7 +59,7 @@ export struct ArtworkDetailComponent {
         .width(50)
         .height(50)
         .backgroundColor('#00000080')
-        .margin(20)
+        .margin({left : 20, top:50})
         .onClick(() => {
           router.back();
         })
@@ -86,7 +86,6 @@ export struct ArtworkDetailComponent {
           this.DetailRow('媒介/材料', this.artwork.medium)
           this.DetailRow('尺寸', this.artwork.dimensions)
           this.DetailRow('文化', this.artwork.culture)
-          this.DetailRow('部门', this.artwork.department)
           Text(`ID: ${this.artwork.objectID}`)
             .fontSize(14)
             .fontColor('#666666')

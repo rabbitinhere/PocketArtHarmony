@@ -219,10 +219,10 @@ struct buildSingleArtwork {
           .fontSize(20).fontColor(Color.White).fontWeight(FontWeight.Bold)
           .maxLines(2).textOverflow({ overflow: TextOverflow.Ellipsis }).textAlign(TextAlign.Start)
 
-        Text(this.artwork.title || '未知信息')
+        Text(this.artwork.artistDisplayName || '未知艺术家')
           .fontSize(16).fontColor(Color.White).opacity(0.9)
 
-        Text(this.artwork.objectID.toString())
+        Text(this.artwork.objectDate || '未知年代')
           .fontSize(14).fontColor(Color.White).opacity(0.7)
       }
       .width('100%')

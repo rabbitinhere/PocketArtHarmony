@@ -36,7 +36,7 @@ export default class TabHistoryViewModel {
   @Track hasMoreData: boolean = true;
   @Track currentPage: number = 0;
 
-  private startYear: number = 2000;
+  private startYear: number = 1800;
   private endYear: number = -2000;
   private step: number = 100;
   private perPage: number = 5; // 每页加载 5 个时间段
