@@ -55,12 +55,12 @@ export struct TabSwipeComponent {
       // 上滑 -> 下一张
       targetOffset = -this.containerHeight;
       willChangeIndex = true;
-      this.swipeViewModel.currentArtwork = null//避免闪烁上一张图
+      this.swipeViewModel.currentArtwork = this.swipeViewModel.nextArtwork//避免闪烁上一张图
     } else if (this.currentOffsetY > threshold && this.swipeViewModel.canSwipePrevious) {
       // 下滑 -> 上一张
       targetOffset = this.containerHeight;
       willChangeIndex = true;
-      this.swipeViewModel.currentArtwork = null//避免闪烁上一张图
+      this.swipeViewModel.currentArtwork = this.swipeViewModel.prevArtwork//避免闪烁上一张图
     } else {
       // 回弹：目标是回到 0
       targetOffset = 0;
