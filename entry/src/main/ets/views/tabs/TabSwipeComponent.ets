@@ -55,12 +55,10 @@ export struct TabSwipeComponent {
       // 上滑 -> 下一张
       targetOffset = -this.containerHeight;
       willChangeIndex = true;
-      this.swipeViewModel.currentArtwork = this.swipeViewModel.nextArtwork//避免闪烁上一张图
     } else if (this.currentOffsetY > threshold && this.swipeViewModel.canSwipePrevious) {
       // 下滑 -> 上一张
       targetOffset = this.containerHeight;
       willChangeIndex = true;
-      this.swipeViewModel.currentArtwork = this.swipeViewModel.prevArtwork//避免闪烁上一张图
     } else {
       // 回弹：目标是回到 0
       targetOffset = 0;
@@ -75,14 +73,23 @@ export struct TabSwipeComponent {
         if (willChangeIndex) {
           // 只有切换了卡片，才通知 ViewModel 更新数据
           if (targetOffset < 0) {
-            this.swipeViewModel.confirmSwipeToNext();
+            this.swipeViewModel.currentArtwork = this.swipeViewModel.nextArtwork//避免闪烁上一张图
+            setTimeout(() => {//避免闪烁上一张图
+              this.swipeViewModel.confirmSwipeToNext();
+              // 数据更新后，瞬间将偏移量重置为 0（新卡片归位）
+              this.currentOffsetY = 0;
+            }, 100);
+
           } else {
-            this.swipeViewModel.confirmSwipeToPrevious();
+            this.swipeViewModel.currentArtwork = this.swipeViewModel.prevArtwork//避免闪烁上一张图
+            setTimeout(() => {//避免闪烁上一张图
+              this.swipeViewModel.confirmSwipeToPrevious();
+              // 数据更新后，瞬间将偏移量重置为 0（新卡片归位）
+              this.currentOffsetY = 0;
+            }, 100);
           }
-          // 数据更新后，瞬间将偏移量重置为 0（新卡片归位）
-          this.currentOffsetY = 0;
         }
-        // 如果是回弹（willChangeIndex === false），offset 已经动画到了 0，无需额外重置
+
       }
     }, () => {
       // ⭐️ 在动画闭包中设置目标值

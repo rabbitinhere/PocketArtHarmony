@@ -28,7 +28,9 @@ export default class SwipeViewModel {
 
   // 统一更新当前、上一张、下一张的引用和状态
   private updateArtworks() {
-    this.currentArtwork = this.artworks[this.currentIndex] || null;
+    if(this.currentArtwork !== (this.artworks[this.currentIndex] || null)){
+      this.currentArtwork = this.artworks[this.currentIndex] || null;
+    }
     this.prevArtwork = this.artworks[this.currentIndex - 1] || null;
 
     // 尝试获取下一张，如果不存在则触发预加载
@@ -43,7 +45,7 @@ export default class SwipeViewModel {
 
 
   private async timerTest() {
-    setInterval(() => {
+    setTimeout(() => {
       console.info("ra_todo confirmSwipeToNext  prevArtwork = " + this.prevArtwork?.artwork.primaryImageSmall + "   currentArtwork = " + this.currentArtwork?.artwork.primaryImageSmall + "   nextArtwork = " + this.nextArtwork?.artwork.primaryImageSmall)
     }, 1000);
   }
