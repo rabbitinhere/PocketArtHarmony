@@ -166,52 +166,6 @@ export struct TabSwipeComponent {
     })
   }
 
-  // 封装单个艺术品视图
-  @Builder
-  buildSingleArtwork(artwork: Artwork) {
-    Stack({ alignContent: Alignment.BottomStart }) {
-      // 【修复点 6】：检查 primaryImageSmall，确保 Image 路径有效，否则使用纯色背景
-      if (artwork.primaryImageSmall) {
-        Image(artwork.primaryImageSmall)
-          .width('100%')
-          .height('100%')
-          .objectFit(ImageFit.Cover)
-          .interpolation(ImageInterpolation.High)
-          .renderMode(ImageRenderMode.Original)
-      } else {
-        // 没有图片路径，显示黑色占位
-        Stack().width('100%').height('100%').backgroundColor(Color.Black)
-      }
-
-      // 信息遮罩
-      this.buildArtworkInfo(artwork)
-    }
-    .width('100%')
-    .height('100%')
-  }
-
-  // ... (其他 Builder 保持不变)
-  @Builder
-  buildArtworkInfo(artwork: Artwork) {
-    Column({ space: 8 }) {
-      Text(artwork.title || '未知标题')
-        .fontSize(20).fontColor(Color.White).fontWeight(FontWeight.Bold)
-        .maxLines(2).textOverflow({ overflow: TextOverflow.Ellipsis }).textAlign(TextAlign.Start)
-
-      Text(artwork.title || '未知信息')
-        .fontSize(16).fontColor(Color.White).opacity(0.9)
-
-      Text(artwork.objectID.toString())
-        .fontSize(14).fontColor(Color.White).opacity(0.7)
-    }
-    .width('100%')
-    .padding({ left: 20, right: 20, bottom: 40 })
-    .alignItems(HorizontalAlign.Start)
-    .justifyContent(FlexAlign.End)
-    .height('100%')
-
-  }
-
   @Builder
   buildLoadingIndicator() {
     if (this.swipeViewModel.isLoading && !this.swipeViewModel.currentArtwork) {
@@ -244,5 +198,47 @@ export struct TabSwipeComponent {
         this.swipeViewModel.confirmSwipeToNext()
       })
     }
+  }
+}
+
+// 封装单个艺术品视图  注意如果用@Builder函数就无法更新UI了
+@Component
+struct buildSingleArtwork {
+  @Prop artwork: Artwork
+  build(){
+    Stack({ alignContent: Alignment.BottomStart }) {
+      // 【修复点 6】：检查 primaryImageSmall，确保 Image 路径有效，否则使用纯色背景
+      if (this.artwork.primaryImageSmall) {
+        Image(this.artwork.primaryImageSmall)
+          .width('100%')
+          .height('100%')
+          .objectFit(ImageFit.Cover)
+          .interpolation(ImageInterpolation.High)
+          .renderMode(ImageRenderMode.Original)
+      } else {
+        // 没有图片路径，显示黑色占位
+        Stack().width('100%').height('100%').backgroundColor(Color.Black)
+      }
+
+      // 信息遮罩
+      Column({ space: 8 }) {
+        Text(this.artwork.title || '未知标题')
+          .fontSize(20).fontColor(Color.White).fontWeight(FontWeight.Bold)
+          .maxLines(2).textOverflow({ overflow: TextOverflow.Ellipsis }).textAlign(TextAlign.Start)
+
+        Text(this.artwork.title || '未知信息')
+          .fontSize(16).fontColor(Color.White).opacity(0.9)
+
+        Text(this.artwork.objectID.toString())
+          .fontSize(14).fontColor(Color.White).opacity(0.7)
+      }
+      .width('100%')
+      .padding({ left: 20, right: 20, bottom: 40 })
+      .alignItems(HorizontalAlign.Start)
+      .justifyContent(FlexAlign.End)
+      .height('100%')
+    }
+    .width('100%')
+    .height('100%')
   }
 }
