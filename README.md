@@ -15,7 +15,7 @@ This is a personal educational project, not an official Metropolitan Museum of A
 ## 💡 演示视频
 
 <p align="center">
-  <img src="./assets/demo.gif" alt="PocketArtHarmony App Demo" style="max-width: 100%;">
+  <img src="/assets/demo.gif" alt="PocketArtHarmony App Demo" style="max-width: 100%;">
 </p>
 
 ## Data Source
