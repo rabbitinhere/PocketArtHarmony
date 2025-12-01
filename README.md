@@ -12,10 +12,10 @@ The PocketArtHarmony is a personal learning project that showcases open access a
 
 This is a personal educational project, not an official Metropolitan Museum of Art application. All artwork data and images are sourced from The Met's Open Access program.
 
-## 💡 演示视频
+## Demo Preview
 
 <p align="center">
-  <img src="/assets/demo.gif" alt="PocketArtHarmony App Demo" style="max-width: 100%;">
+  <img src="/assets/demo.gif" alt="PocketArtHarmony App Demo">
 </p>
 
 ## Data Source
