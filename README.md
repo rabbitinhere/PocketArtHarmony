@@ -15,9 +15,7 @@ This is a personal educational project, not an official Metropolitan Museum of A
 ## 💡 演示视频
 
 <p align="center">
-  <video src="./assets/demo.mp4" muted autoplay loop style="max-width: 100%;">
-    抱歉，您的浏览器不支持内嵌视频。请点击 <a href="./assets/demo.mp4">此处</a> 查看视频。
-  </video>
+  <img src="./assets/demo.gif" alt="PocketArtHarmony App Demo" style="max-width: 100%;">
 </p>
 
 ## Data Source
