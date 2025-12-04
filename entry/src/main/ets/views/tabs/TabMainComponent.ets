@@ -24,7 +24,7 @@ export struct TabMainComponent {
                 .fontWeight(FontWeight.Bold)
                 .textAlign(TextAlign.Center)
                 .width('100%')
-                .margin({ top: 5, bottom: 20 })
+                .margin({ top: 20, bottom: 20 })
             }
             ListItem() {
 
