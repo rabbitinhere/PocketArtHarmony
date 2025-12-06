@@ -177,7 +177,7 @@ export struct TabSwipeComponent {
     if (this.swipeViewModel.isLoading && !this.swipeViewModel.currentArtwork) {
       Column() {
         LoadingProgress().width(40).height(40).color(Color.White)
-        Text('加载中...').fontSize(16).fontColor(Color.White).margin({ top: 12 })
+        Text('Loading...').fontSize(16).fontColor(Color.White).margin({ top: 12 })
       }
       .width('100%').height('100%').justifyContent(FlexAlign.Center).backgroundColor('#00000040')
     }
@@ -188,7 +188,7 @@ export struct TabSwipeComponent {
     if (this.swipeViewModel.errorMessage) {
       Column() {
         Text(this.swipeViewModel.errorMessage).fontSize(16).fontColor(Color.White).padding(16).backgroundColor('#FF000080').borderRadius(8)
-        Button('重试').fontSize(14).fontColor(Color.White).backgroundColor('#007DFF').margin({ top: 12 })
+        Button('Retry').fontSize(14).fontColor(Color.White).backgroundColor('#007DFF').margin({ top: 12 })
           .onClick(() => this.swipeViewModel.initialize())
       }
       .width('100%').height('100%').justifyContent(FlexAlign.Center)
@@ -215,14 +215,14 @@ struct buildSingleArtwork {
       }
 
       Column({ space: 8 }) {
-        Text(this.artwork.title || '未知标题')
+        Text(this.artwork.title || 'Unknown Title')
           .fontSize(20).fontColor(Color.White).fontWeight(FontWeight.Bold)
           .maxLines(2).textOverflow({ overflow: TextOverflow.Ellipsis }).textAlign(TextAlign.Start)
 
-        Text(this.artwork.artistDisplayName || '未知艺术家')
+        Text(this.artwork.artistDisplayName || 'Unknown Artist')
           .fontSize(16).fontColor(Color.White).opacity(0.9)
 
-        Text(this.artwork.objectDate || '未知年代')
+        Text(this.artwork.objectDate || 'Unknown Period')
           .fontSize(14).fontColor(Color.White).opacity(0.7)
       }
       .width('100%')

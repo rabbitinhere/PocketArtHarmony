@@ -45,10 +45,10 @@ export struct TabHistoryComponent {
                 LoadingProgress()
                   .width(30)
                   .height(30)
-                Text('博物馆有访问限制15秒，请耐心等待...')
+                Text('Museum access limited (15s). Please wait...')
                   .margin({ left: 8 })
               } else {
-                Text('上拉加载更多')
+                Text('Pull up to load more')
                   .fontColor('#666')
               }
             }
@@ -86,7 +86,7 @@ export struct TabHistoryComponent {
               .color('#ffffff')
               .width(60)
               .height(60)
-            Text('加载中...')
+            Text('Loading...')
               .fontSize(18)
               .fontColor('#ffffff')
               .margin({ top: 12 })
@@ -144,7 +144,7 @@ export struct TabHistoryComponent {
       .alignItems(HorizontalAlign.Center)
 
       // 年份文本 - 直接使用 params.item.year
-      Text(params.item.year >= 0 ? `${params.item.year}年` : `${Math.abs(params.item.year)}年 BCE`)
+      Text(params.item.year >= 0 ? `${params.item.year}` : `${Math.abs(params.item.year)} BCE`)
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
         .fontColor('#333333')

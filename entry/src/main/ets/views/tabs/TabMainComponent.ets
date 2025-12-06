@@ -1,6 +1,7 @@
 import TabMainViewModel from "../../viewModel/TabMainViewModel";
 import { Artwork, OneArtworkViewModel } from "../../viewModel/OneArtworkViewModel";
 import router from '@ohos.router'; // 导入 router 模块
+import { promptAction } from '@kit.ArkUI'; // ✅ 导入 promptAction 用于显示弹框
 
 
 @Component
@@ -10,6 +11,21 @@ export struct TabMainComponent {
   aboutToAppear() {
     this.todoListViewModel.loadArtworks();
   }
+
+  // ✅ 定义弹窗内容
+  private readonly DIALOG_TITLE: string = 'Data Source Statement';
+  private readonly DIALOG_MESSAGE: string = `This is a personal learning project that showcases open access artworks from The Metropolitan Museum of Art's collection. This application utilizes The Met's public API to display art pieces for educational and non-commercial purposes only.
+
+This project uses The Metropolitan Museum of Art's Collection API:
+API Documentation: https://metmuseum.github.io/
+Official Website: https://www.metmuseum.org/
+
+Usage Restrictions:
+Users of this application must adhere to The Metropolitan Museum of Art's terms and conditions:
+Terms of Use: https://www.metmuseum.org/policies/terms-and-conditions
+
+Disclaimer:
+This application is not affiliated with, endorsed by, or connected to The Metropolitan Museum of Art. All artwork rights remain with their respective copyright holders as specified by The Met's Open Access policy.`;
 
   build() {
     Stack() { //使用 Stack 让 Loading 层叠在列表上
@@ -26,11 +42,36 @@ export struct TabMainComponent {
                 .width('100%')
                 .margin({ top: 20, bottom: 20 })
             }
-            ListItem() {
 
+            // ✅ 新增：信息提示条
+            ListItem() {
+              Row() {
+                Text('Data Source Statement')
+                  .fontSize(12)
+                  .fontColor('#007DFF') // 蓝色，表示可点击
+                  .textAlign(TextAlign.Center)
+                  .width('100%')
+              }
+              .height(30)
+              .justifyContent(FlexAlign.Center)
+              .onClick(() => {
+                promptAction.showDialog({
+                  title: this.DIALOG_TITLE,
+                  message: this.DIALOG_MESSAGE,
+                  buttons: [
+                    {
+                      text: 'OK',
+                      color: '#007DFF'
+                    }
+                  ]
+                });
+              })
+            }
+            // --- 保持原有的输入框和搜索按钮 ---
+            ListItem() {
               Row() {
                 // 输入框 - 使用 layoutWeight 自动填充剩余空间
-                TextInput({ placeholder: "请输入艺术品名" })
+                TextInput({ placeholder: "Enter the artwork name" })
                   .layoutWeight(1) // 占据剩余所有空间
                   .height(40)
                   .backgroundColor('#F0F0F0')
@@ -92,10 +133,10 @@ export struct TabMainComponent {
                   LoadingProgress()
                     .width(30)
                     .height(30)
-                  Text('加载中...')
+                  Text('Loading...')
                     .margin({ left: 8 })
                 } else {
-                  Text('上拉加载更多')
+                  Text('Pull up to load more')
                     .fontColor('#666')
                 }
               }
@@ -128,7 +169,7 @@ export struct TabMainComponent {
               .color('#ffffff')
               .width(60)
               .height(60)
-            Text('加载中...')
+            Text('Loading...')
               .fontSize(18)
               .fontColor('#ffffff')
               .margin({ top: 12 })

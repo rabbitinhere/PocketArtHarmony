@@ -14,7 +14,7 @@ export struct ArtworkDetailComponent {
   // 使用 @State 接收通过 router.pushUrl 传入的参数，提供默认值
   @State artwork: Artwork = {
     objectID: 0,
-    title: '加载中...',
+    title: 'Loading...',
     primaryImage: '',
     primaryImageSmall: '',
     artistDisplayName: 'N/A',
@@ -81,11 +81,11 @@ export struct ArtworkDetailComponent {
             .textOverflow({ overflow: TextOverflow.Ellipsis })
 
           // 详情信息
-          this.DetailRow('艺术家', this.artwork.artistDisplayName)
-          this.DetailRow('创作日期', this.artwork.objectDate)
-          this.DetailRow('媒介/材料', this.artwork.medium)
-          this.DetailRow('尺寸', this.artwork.dimensions)
-          this.DetailRow('文化', this.artwork.culture)
+          this.DetailRow('artist', this.artwork.artistDisplayName)
+          this.DetailRow('Date', this.artwork.objectDate)
+          this.DetailRow('medium', this.artwork.medium)
+          this.DetailRow('dimensions', this.artwork.dimensions)
+          this.DetailRow('culture', this.artwork.culture)
           Text(`ID: ${this.artwork.objectID}`)
             .fontSize(14)
             .fontColor('#666666')
