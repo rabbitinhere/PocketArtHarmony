@@ -22,7 +22,7 @@
         "description": "$string:EntryAbility_desc",
         "icon": "$media:layered_image_logo",
         "label": "$string:EntryAbility_label",
-        "startWindowIcon": "$media:layered_image_logo",
+        "startWindowIcon": "$media:full_logo",
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
         "skills": [

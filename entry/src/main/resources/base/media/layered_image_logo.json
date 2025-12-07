@@ -2,6 +2,6 @@
   "layered-image":
   {
     "background" : "$media:logo_background",
-    "foreground" : "$media:logo_foreground"
+    "foreground" : "$media:logo_foreground2"
   }
 }
