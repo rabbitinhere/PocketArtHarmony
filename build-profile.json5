@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "C:/Users/RABBIT/RABBIT/WORK/HARMONY/POCKETART/KeyAndCSR/pocketart.p12",
+          "storePassword": "0000001849FBA485BDB1DBF9CC0BE84012AA7AF6AA64B8BA9E671551E0DBFFCE14386CA3025E3B9D",
+          "keyAlias": "rabbitinhere",
+          "keyPassword": "00000018EEEF6C27D3F7B10AC7C21FE90B064274A497033AED3EFCD3E670211307576FE9EA29DEB7",
+          "signAlg": "SHA256withECDSA",
+          "profile": "C:/Users/RABBIT/RABBIT/WORK/HARMONY/POCKETART/KeyAndCSR/PocketArtRelease.p7b",
+          "certpath": "C:/Users/RABBIT/RABBIT/WORK/HARMONY/POCKETART/KeyAndCSR/PocketArt.cer"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
